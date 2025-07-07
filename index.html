@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>多多买菜销售数据查询系统</title>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
       :root {
@@ -545,8 +546,139 @@
           display: block;
         }
       }
-      
-      /* 响应式设计 */
+
+      /* 汇总表格样式保持不变 */
+      #summaryTable {
+        table-layout: fixed;
+        width: 100%;
+      }
+
+      #summaryTable th:nth-child(1),
+      #summaryTable td:nth-child(1) {
+        width: 30%;
+        max-width: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      #summaryTable th:nth-child(2),
+      #summaryTable td:nth-child(2) {
+        width: 35%;
+        text-align: right;
+      }
+
+      #summaryTable th:nth-child(3),
+      #summaryTable td:nth-child(3) {
+        width: 35%;
+        text-align: right;
+      }
+
+      /* 饼图主容器使用flex0布局 */
+      .summary-content {
+        display: flex;
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+        width: 100%;
+        flex-wrap: nowrap; /* 防止换行 */
+      }
+
+      /* 表格容器 - 左侧50% */
+      .summary-table-container {
+        flex: 1; /* 改为flex分配空间 */
+        height: 100%;
+        overflow: auto;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        box-sizing: border-box;
+        min-height: 350px; /* 添加最小高度 */
+        min-width: 300px;/* 添加最小宽度 */
+        padding-top: 0; /* 确保容器无上内边距 */
+      }
+
+      /* 图表容器 - 右侧50% */
+      .chart-container {
+        flex: 1; /* 改为flex分配空间 */
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+        border: 1px solid var(--border);
+        display: flex;
+        align-items:center; /* 垂直居中 */
+        justify-content: center; /* 居中对齐 */
+        min-height: 350px; /* 与表格容器保持一致 */
+        box-sizing: border-box;
+        min-width: 300px; /* 添加与表格相同的最小宽度 */
+      }
+
+      /* 确保表格容器内部表格高度正确 */
+      #summaryTable {
+        width: 100%;
+        table-layout: fixed;
+        border-collapse: separate; /* 改为separate才能控制间距 */
+        border-spacing: 0; /* 消除单元格默认间距 */
+        margin-top: -8px; /* 上移补偿空白 */
+      }
+
+      #summaryTable tr:first-child td {
+        padding-top: 4px; /* 减少首行内边距 */
+        border-top: none; /* 移除首行上边框 */
+      }
+
+      #summaryTable th,
+      #summaryTable td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+      }
+
+      #summaryTable th {
+        background-color: #f1f5fd;
+        position: sticky;
+        top: 0;
+      }
+
+      /* 确保图表容器内部图表尺寸正确 */
+      #chartContainer {
+        width: 100%;
+        height: 100%;
+      }      
+
+      /* 【以下】饼图响应式调整 - 小于992px时缩小容器宽度 */
+      @media (max-width: 992px) {
+        .summary-content {
+          gap: 1rem; /* 缩小间距 */
+          overflow-x: auto; /* 允许横向滚动 */
+          padding-bottom: 10px; /* 为滚动条留空间 */
+        }
+        
+        .summary-table-container,
+        .chart-container {
+          min-width: 280px; /* 缩小最小宽度 */
+          flex: 0 0 45%; /* 固定宽度45%（留出gap空间） */
+          min-height: 320px; /* 适当增加高度补偿宽度缩小 */
+        }
+        
+        /* 优化表格字体大小 */
+        #summaryTable {
+          font-size: 0.9em;
+        }
+      }
+
+      /* 小于768px时强制垂直堆叠（极端小屏） */
+      @media (max-width: 768px) {
+        .summary-content {
+          flex-direction: column;
+        }
+        
+        .summary-table-container,
+        .chart-container {
+          width: 100% !important;
+          min-width: auto;
+          flex: 1 1 auto;
+        }
+      }
+
+      /*===== 【以下】主界面响应式设计 ======*/
       @media (max-width: 1400px) {
         .filters-row { 
           grid-template-columns: repeat(3, 1fr);
@@ -622,340 +754,189 @@
             max-height: 80px; /* 移动端允许更多空间 */
           }
         }
-
-        /* ====新增登录相关样式！==== */
-        .auth-container {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          min-height: 100vh;
-          background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
-        }
-        
-        .auth-card {
-          background: white;
-          border-radius: 12px;
-          padding: 2rem;
-          width: 400px;
-          max-width: 90%;
-          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-        }
-        
-        .auth-header {
-          text-align: center;
-          margin-bottom: 1.5rem;
-        }
-        
-        .auth-tabs {
-          display: flex;
-          margin-bottom: 1.5rem;
-          border-bottom: 1px solid #e2e8f0;
-        }
-        
-        .auth-tab {
-          flex: 1;
-          padding: 0.75rem;
-          text-align: center;
-          cursor: pointer;
-          transition: all 0.3s;
-        }
-        
-        .auth-tab.active {
-          border-bottom: 2px solid #4361ee;
-          color: #4361ee;
-          font-weight: 600;
-        }
-        
-        .auth-form {
-          display: none;
-        }
-        
-        .auth-form.active {
-          display: block;
-        }
-        
-        .auth-form-group {
-          margin-bottom: 1.25rem;
-        }
-        
-        .auth-form-group label {
-          display: block;
-          margin-bottom: 0.5rem;
-          font-weight: 500;
-        }
-        
-        .auth-form-group input {
-          width: 100%;
-          padding: 0.75rem;
-          border: 1px solid #e2e8f0;
-          border-radius: 8px;
-          font-size: 1rem;
-        }
-        
-        .auth-submit-btn {
-          width: 100%;
-          padding: 0.85rem;
-          background: #4361ee;
-          color: white;
-          border: none;
-          border-radius: 8px;
-          font-size: 1rem;
-          font-weight: 600;
-          cursor: pointer;
-          transition: background 0.3s;
-        }
-        
-        .auth-submit-btn:hover {
-          background: #3a55d4;
-        }
-        
-        .auth-footer {
-          text-align: center;
-          margin-top: 1.5rem;
-          color: #6c757d;
-        }
-        
-        .auth-footer a {
-          color: #4361ee;
-          cursor: pointer;
-        }
-        
-        /* 隐藏主应用容器直到登录 */
-        .app-container {
-          display: none;
-        }          
       }
   </style>
 </head>
 <body>
-  <!-- 登录容器 -->
-  <div id="authContainer" class="auth-container">
-    <div class="auth-card">
-      <div class="auth-header">
-        <h2>销售数据查询系统</h2>
-        <p>请登录访问数据</p>
+  <div class="container">
+    <header>
+      <h1><i class="fas fa-chart-line"></i> 多多买菜销售数据查询系统</h1>
+      <p class="subtitle">实时查看和分析销售数据，优化您的销售策略</p>
+    </header>
+    
+    <div class="card">
+      <div class="card-header">
+        <h2><i class="fas fa-filter"></i> 数据筛选</h2>
       </div>
-      
-      <div class="auth-tabs">
-        <div class="auth-tab active" data-tab="login">登录</div>
-        <div class="auth-tab" data-tab="register">注册</div>
-      </div>
-      
-      <!-- 登录表单 -->
-      <div id="loginForm" class="auth-form active">
-        <div class="auth-form-group">
-          <label for="loginEmail">邮箱</label>
-          <input type="email" id="loginEmail" placeholder="your@email.com">
+      <div class="card-body">
+        <div class="filters-row">
+          <div class="filter-group">
+            <label for="startDate"><i class="fas fa-calendar-day"></i> 开始日期</label>
+            <input type="date" id="startDate">
+          </div>
+          
+          <div class="filter-group">
+            <label for="endDate"><i class="fas fa-calendar-day"></i> 结束日期</label>
+            <input type="date" id="endDate">
+          </div>
+          
+          <div class="filter-group">
+            <label><i class="fas fa-warehouse"></i> 仓库</label>
+            <div class="custom-multiselect" id="warehouseMultiselect">
+              <div class="select-box" id="warehouseSelector">
+                <div class="placeholder">选择仓库</div>
+                <div class="selected-display"></div> <!-- 新增：用于显示选中项 -->
+                <i class="fas fa-chevron-down arrow"></i>
+                <i class="fas fa-times-circle clear-btn"></i> <!-- 新增：清除按钮 -->
+              </div>
+              <div class="options-container" id="warehouseOptions">
+                <div class="option" id="warehouseSelectAll">
+                  <input type="checkbox" id="selectAllWarehouses">
+                  <label for="selectAllWarehouses">全选</label>
+                </div>
+                <!-- 仓库选项将通过JS动态添加 -->
+              </div>
+            </div>
+          </div>
+          
+          <div class="filter-group">
+            <label><i class="fas fa-tags"></i> 品牌</label>
+            <div class="custom-multiselect" id="brandMultiselect">
+              <div class="select-box" id="brandSelector">
+                <div class="placeholder">选择品牌</div>
+                <div class="selected-display"></div> <!-- 新增：用于显示选中项 -->
+                <i class="fas fa-chevron-down arrow"></i>
+                <i class="fas fa-times-circle clear-btn"></i> <!-- 新增：清除按钮 -->
+              </div>
+              <div class="options-container" id="brandOptions">
+                <div class="option" id="brandSelectAll">
+                  <input type="checkbox" id="selectAllBrands">
+                  <label for="selectAllBrands">全选</label>
+                </div>
+                <!-- 品牌选项将通过JS动态添加 -->
+              </div>
+            </div>
+          </div>
+          
+          <div class="filter-group">
+            <label><i class="fas fa-box"></i> 商品</label>
+            <div class="custom-multiselect" id="productMultiselect">
+              <div class="select-box" id="productSelector">
+                <div class="placeholder">选择商品</div>
+                <div class="selected-display"></div> <!-- 新增：用于显示选中项 -->
+                <i class="fas fa-chevron-down arrow"></i>
+                <i class="fas fa-times-circle clear-btn"></i> <!-- 新增：清除按钮 -->
+              </div>
+              <div class="options-container" id="productOptions">
+                <div class="option" id="productSelectAll">
+                  <input type="checkbox" id="selectAllProducts">
+                  <label for="selectAllProducts">全选</label>
+                </div>
+                <!-- 商品选项将通过JS动态添加 -->
+              </div>
+            </div>
+          </div>
         </div>
         
-        <div class="auth-form-group">
-          <label for="loginPassword">密码</label>
-          <input type="password" id="loginPassword" placeholder="••••••••">
+        <div class="controls">
+          <div class="action-buttons">
+            <button id="clearBtn" class="btn-secondary">
+              <i class="fas fa-eraser"></i> 清除筛选
+            </button>
+            <button id="queryBtn" class="btn-query">
+              <i class="fas fa-search"></i> 查询数据
+            </button>
+          </div>
+          <div class="info-text">
+            <i class="fas fa-info-circle"></i> 品牌和商品支持多选，选择品牌后商品列表会自动过滤
+          </div>
         </div>
-        
-        <button id="loginBtn" class="auth-submit-btn">登录</button>
-        
-        <div class="auth-footer">
-          <a id="forgotPasswordLink">忘记密码?</a>
-        </div>
-      </div>
-      
-      <!-- 注册表单 -->
-      <div id="registerForm" class="auth-form">
-        <div class="auth-form-group">
-          <label for="registerEmail">邮箱</label>
-          <input type="email" id="registerEmail" placeholder="your@email.com">
-        </div>
-        
-        <div class="auth-form-group">
-          <label for="registerPassword">密码</label>
-          <input type="password" id="registerPassword" placeholder="••••••••">
-        </div>
-        
-        <div class="auth-form-group">
-          <label for="registerPhone">手机号 (可选)</label>
-          <input type="tel" id="registerPhone" placeholder="+86 1234567890">
-        </div>
-        
-        <button id="registerBtn" class="auth-submit-btn">注册</button>
       </div>
     </div>
-  </div>
-  
-  <!-- 主应用容器 (默认隐藏) -->
-  <div id="appContainer" class="app-container">  
-    <div class="container">
-      <header>
-        <h1><i class="fas fa-chart-line"></i> 多多买菜销售数据查询系统</h1>
-        <p class="subtitle">实时查看和分析销售数据，优化您的销售策略</p>
-      </header>
-      
-      <div class="card">
-        <div class="card-header">
-          <h2><i class="fas fa-filter"></i> 数据筛选</h2>
+    
+    <div class="card summary-card">
+      <div class="card-header">
+        <h2><i class="fas fa-chart-pie"></i> 销售汇总</h2>
+      </div>
+      <div class="card-body">
+        <div class="summary-stats">
+          <div class="stat-card">
+            <div class="stat-label">总销量</div>
+            <div id="totalQuantity" class="stat-value">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">总金额</div>
+            <div id="totalAmount" class="stat-value">¥0.00</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">品牌数量</div>
+            <div id="totalBrands" class="stat-value">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">商品种类</div>
+            <div id="totalProducts" class="stat-value">0</div>
+          </div>
         </div>
-        <div class="card-body">
-          <div class="filters-row">
-            <div class="filter-group">
-              <label for="startDate"><i class="fas fa-calendar-day"></i> 开始日期</label>
-              <input type="date" id="startDate">
-            </div>
-            
-            <div class="filter-group">
-              <label for="endDate"><i class="fas fa-calendar-day"></i> 结束日期</label>
-              <input type="date" id="endDate">
-            </div>
-            
-            <div class="filter-group">
-              <label><i class="fas fa-warehouse"></i> 仓库</label>
-              <div class="custom-multiselect" id="warehouseMultiselect">
-                <div class="select-box" id="warehouseSelector">
-                  <div class="placeholder">选择仓库</div>
-                  <div class="selected-display"></div> <!-- 新增：用于显示选中项 -->
-                  <i class="fas fa-chevron-down arrow"></i>
-                  <i class="fas fa-times-circle clear-btn"></i> <!-- 新增：清除按钮 -->
-                </div>
-                <div class="options-container" id="warehouseOptions">
-                  <div class="option" id="warehouseSelectAll">
-                    <input type="checkbox" id="selectAllWarehouses">
-                    <label for="selectAllWarehouses">全选</label>
-                  </div>
-                  <!-- 仓库选项将通过JS动态添加 -->
-                </div>
-              </div>
-            </div>
-            
-            <div class="filter-group">
-              <label><i class="fas fa-tags"></i> 品牌</label>
-              <div class="custom-multiselect" id="brandMultiselect">
-                <div class="select-box" id="brandSelector">
-                  <div class="placeholder">选择品牌</div>
-                  <div class="selected-display"></div> <!-- 新增：用于显示选中项 -->
-                  <i class="fas fa-chevron-down arrow"></i>
-                  <i class="fas fa-times-circle clear-btn"></i> <!-- 新增：清除按钮 -->
-                </div>
-                <div class="options-container" id="brandOptions">
-                  <div class="option" id="brandSelectAll">
-                    <input type="checkbox" id="selectAllBrands">
-                    <label for="selectAllBrands">全选</label>
-                  </div>
-                  <!-- 品牌选项将通过JS动态添加 -->
-                </div>
-              </div>
-            </div>
-            
-            <div class="filter-group">
-              <label><i class="fas fa-box"></i> 商品</label>
-              <div class="custom-multiselect" id="productMultiselect">
-                <div class="select-box" id="productSelector">
-                  <div class="placeholder">选择商品</div>
-                  <div class="selected-display"></div> <!-- 新增：用于显示选中项 -->
-                  <i class="fas fa-chevron-down arrow"></i>
-                  <i class="fas fa-times-circle clear-btn"></i> <!-- 新增：清除按钮 -->
-                </div>
-                <div class="options-container" id="productOptions">
-                  <div class="option" id="productSelectAll">
-                    <input type="checkbox" id="selectAllProducts">
-                    <label for="selectAllProducts">全选</label>
-                  </div>
-                  <!-- 商品选项将通过JS动态添加 -->
-                </div>
-              </div>
-            </div>
+        
+        <!-- 新增: 汇总表格和饼图容器 -->
+        <div class="summary-content">
+          <div class="summary-table-container">
+            <table id="summaryTable">
+              <thead>
+                <tr>
+                  <th>品牌</th>
+                  <th>销售数量</th>
+                  <th>销售金额</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
           </div>
           
-          <div class="controls">
-            <div class="action-buttons">
-              <button id="clearBtn" class="btn-secondary">
-                <i class="fas fa-eraser"></i> 清除筛选
-              </button>
-              <button id="queryBtn" class="btn-query">
-                <i class="fas fa-search"></i> 查询数据
-              </button>
-            </div>
-            <div class="info-text">
-              <i class="fas fa-info-circle"></i> 品牌和商品支持多选，选择品牌后商品列表会自动过滤
-            </div>
+          <div class="chart-container" id="chartContainer">
+            <!-- 饼图将动态渲染在这里 -->
           </div>
         </div>
       </div>
-      
-      <div class="card summary-card">
-        <div class="card-header">
-          <h2><i class="fas fa-chart-pie"></i> 销售汇总</h2>
+    </div>
+    
+    <div class="card">
+      <div class="card-header">
+        <h2><i class="fas fa-list"></i> 详细销售记录</h2>
+      </div>
+      <div class="card-body">
+        <div class="toggle-details" id="toggleDetails">
+          <i class="fas fa-chevron-down"></i> 点击显示详细销售记录
         </div>
-        <div class="card-body">
-          <div class="summary-stats">
-            <div class="stat-card">
-              <div class="stat-label">总销量</div>
-              <div id="totalQuantity" class="stat-value">0</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">总金额</div>
-              <div id="totalAmount" class="stat-value">¥0.00</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">品牌数量</div>
-              <div id="totalBrands" class="stat-value">0</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-label">商品种类</div>
-              <div id="totalProducts" class="stat-value">0</div>
-            </div>
-          </div>
-          
-          <table id="summaryTable">
+        
+        <div class="detail-section" id="detailSection">
+          <table id="detailTable">
             <thead>
               <tr>
                 <th>日期</th>
+                <th>商品ID</th>
+                <th>商品名称</th>
                 <th>品牌</th>
-                <th>销售数量</th>
-                <th>销售金额</th>
+                <th>仓库</th>
+                <th>销量</th>
+                <th>单价</th>
+                <th>金额</th>
               </tr>
             </thead>
             <tbody></tbody>
           </table>
         </div>
       </div>
-      
-      <div class="card">
-        <div class="card-header">
-          <h2><i class="fas fa-list"></i> 详细销售记录</h2>
-        </div>
-        <div class="card-body">
-          <div class="toggle-details" id="toggleDetails">
-            <i class="fas fa-chevron-down"></i> 点击显示详细销售记录
-          </div>
-          
-          <div class="detail-section" id="detailSection">
-            <table id="detailTable">
-              <thead>
-                <tr>
-                  <th>日期</th>
-                  <th>商品ID</th>
-                  <th>商品名称</th>
-                  <th>品牌</th>
-                  <th>仓库</th>
-                  <th>销量</th>
-                  <th>单价</th>
-                  <th>金额</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-      
-      <div class="loading" id="loading">
-        <div class="spinner"></div>
-        <p>正在加载数据，请稍候...</p>
-      </div>
+    </div>
+    
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p>正在加载数据，请稍候...</p>
     </div>
   </div>
 
   <!-- 逻辑脚本 -->
- <script src="main.js"></script>
+ <script src="mainApp.js"></script>
 
 </body>
 </html>
