@@ -676,10 +676,9 @@ function calculateSummary(data) {
   // === 新增: 渲染饼图 ===
   renderBrandPieChart(sortedSummaries);
 
-  // === 新增: 同步左右容器高度 ===
   setTimeout(() => {
     syncContainersDimensions();
-  }, 0);
+  }, 0);  
 }
 
 // 同步容器尺寸函数
@@ -688,33 +687,15 @@ function syncContainersDimensions() {
   const chartContainer = document.querySelector('.chart-container');
   
   if (tableContainer && chartContainer) {
-    // 获取窗口宽度
-    const windowWidth = window.innerWidth;
-    
     // 获取左侧表格的实际高度
     const tableHeight = tableContainer.scrollHeight;
     
     // 设置右侧图表容器高度
     chartContainer.style.height = `${tableHeight}px`;
     
-    // 响应式宽度处理
-    if (windowWidth <= 992) {
-      // 在小屏幕下设置容器宽度为100%
-      tableContainer.style.width = '100%';
-      chartContainer.style.width = '100%';
-    } else {
-      // 在大屏幕下恢复弹性宽度
-      tableContainer.style.width = '';
-      chartContainer.style.width = '';
-    }
-    
     // 如果图表已渲染，重新调整大小
-    const chartCanvas = document.getElementById('brandChart');
-    if (chartCanvas) {
-      const chartInstance = Chart.getChart(chartCanvas);
-      if (chartInstance) {
-        chartInstance.resize();
-      }
+    if (chartContainer.chartInstance) {
+      chartContainer.chartInstance.resize();
     }
   }
 }
@@ -731,30 +712,48 @@ function renderBrandPieChart(brandSummaries) {
   if (brandSummaries.length === 0) return;
   
   const ctx = document.getElementById('brandChart').getContext('2d');
+  if (!ctx) {
+    console.error('Canvas context not found');
+    return;
+  }  
   
-  // 品牌颜色生成器
+  // 改进的颜色生成器 - 增加对比度
   const generateColors = (count) => {
     const baseColors = [
-      '#4361ee', '#3f37c9', '#4cc9f0', '#f72585', '#7209b7', 
-      '#3a0ca3', '#4895ef', '#560bad', '#b5179e', '#f15bb5'
+      '#36A2EB', // 蓝色
+      '#F15BB5',  // 粉红
+      '#FFCE56', // 黄色
+      '#FF6384', // 红色
+      '#9966FF', // 紫色
+      '#FF9F40', // 橙色
+      '#8AC926', // 绿色
+      '#6A4C93', // 深紫
+      '#4BC0C0', // 青色
+      '#1982C4' // 深蓝
     ];
+    
+    // 当品牌数量超过基础颜色时，生成随机颜色
+    if (count > baseColors.length) {
+      for (let i = baseColors.length; i < count; i++) {
+        baseColors.push(`#${Math.floor(Math.random()*16777215).toString(16)}`);
+      }
+    }
+    
     return baseColors.slice(0, count);
   };
   
-  // 创建标准饼图（不使用3D插件）
-  new Chart(ctx, {
+  // 创建饼图
+  const chart = new Chart(ctx, {
     type: 'pie',
     data: {
       labels: brandSummaries.map(item => item.brand),
       datasets: [{
         data: brandSummaries.map(item => item.total_amount),
         backgroundColor: generateColors(brandSummaries.length),
-        borderWidth: 1,
-        // 添加阴影效果增强立体感
-        shadowOffsetX: 3,
-        shadowOffsetY: 3,
-        shadowBlur: 10,
-        shadowColor: 'rgba(0, 0, 0, 0.3)'
+        borderWidth: 2,
+        borderColor: '#fff',
+        hoverOffset: 15,
+        radius: '95%' // 设置饼图大小为95%
       }]
     },
     options: {
@@ -764,21 +763,37 @@ function renderBrandPieChart(brandSummaries) {
         legend: {
           position: 'right',
           labels: {
-            font: {
-              size: 12
+            font: { 
+              size: 12,
+              weight: 'bold'
             },
-            padding: 15
+            padding: 15,
+            usePointStyle: true,
+            color: '#333'
           }
         },
         title: {
           display: true,
           text: '品牌销售金额占比',
-          align: 'start', // 新增：左对齐标题
           font: {
-            size: 16
+            size: 18,
+            weight: 'bold'
+          },
+          color: '#222',
+          padding: {
+            top: 20,
+            bottom: 15
           }
         },
         tooltip: {
+          backgroundColor: 'rgba(0,0,0,0.8)',
+          titleFont: {
+            size: 14,
+            weight: 'bold'
+          },
+          bodyFont: {
+            size: 12
+          },
           callbacks: {
             label: function(context) {
               const label = context.label || '';
@@ -788,15 +803,40 @@ function renderBrandPieChart(brandSummaries) {
               return `${label}: ¥${formatNumber(value)} (${percentage}%)`;
             }
           }
+        },
+        datalabels: {
+          display: true,
+          formatter: (value, ctx) => {
+            const total = ctx.chart.getDatasetMeta(0).total;
+            const percentage = Math.round((value / total) * 100);
+            const label = ctx.chart.data.labels[ctx.dataIndex];
+            
+            if (percentage < 5) return null;
+            
+            return `${label}\n${percentage}%`;
+          },
+          color: '#fff',
+          font: {
+            weight: 'bold',
+            size: 12
+          },
+          align: 'start',
+          anchor: 'end',
+          offset: 30,
+          clip: false,
+          textAlign: 'center'
         }
       },
-      // 添加动画效果增强交互感
       animation: {
         animateRotate: true,
         animateScale: true
       }
-    }
+    },
+    plugins: [ChartDataLabels]
   });
+
+  // 存储图表实例以便后续调整
+  chartContainer.chartInstance = chart;
 }
 
 // ============== 8. 其他功能 ==============
@@ -823,9 +863,14 @@ function clearFilters() {
 // 切换详细记录显示
 function toggleDetailSection() {
   detailSection.classList.toggle('visible');
-  toggleDetails.innerHTML = detailSection.classList.contains('visible')
-    ? '<i class="fas fa-chevron-up"></i> 点击隐藏详细销售记录'
-    : '<i class="fas fa-chevron-down"></i> 点击显示详细销售记录';
+  
+  // 更新图标方向
+  const icon = document.querySelector('#toggleDetails i');
+  if (detailSection.classList.contains('visible')) {
+    icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+  } else {
+    icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+  }
 }
 
 // ============== 9. 页面初始化 ==============
@@ -851,7 +896,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // 绑定事件
       queryBtn.addEventListener('click', loadData);
       clearBtn.addEventListener('click', clearFilters);
-      toggleDetails.addEventListener('click', toggleDetailSection);
+      document.getElementById('toggleDetails').addEventListener('click', toggleDetailSection);
       
       // 加载初始数据
       loadData();

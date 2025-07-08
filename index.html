@@ -6,7 +6,9 @@
   <title>多多买菜销售数据查询系统</title>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="icon" href="app32x32.png" type="image/x-icon">
   <style>
       :root {
         --primary: #4361ee;
@@ -519,11 +521,6 @@
         box-shadow: 0 6px 12px rgba(5, 150, 105, 0.3);
       }
       
-      .info-text {
-        color: var(--text-secondary);
-        font-size: 0.9rem;
-      }
-      
       /* 详细记录切换 */
       .toggle-details {
         display: inline-block;
@@ -539,7 +536,7 @@
       }
       
       .detail-section {
-        margin-top: 2rem;
+        margin-top: 2rem; 
         display: none;
         
         &.visible {
@@ -608,20 +605,22 @@
         min-height: 350px; /* 与表格容器保持一致 */
         box-sizing: border-box;
         min-width: 300px; /* 添加与表格相同的最小宽度 */
+        position: relative; /* 确保图表正确定位 */
       }
 
       /* 确保表格容器内部表格高度正确 */
       #summaryTable {
         width: 100%;
         table-layout: fixed;
-        border-collapse: separate; /* 改为separate才能控制间距 */
-        border-spacing: 0; /* 消除单元格默认间距 */
+        border-collapse: collapse;
+       /* border-spacing: 0; /* 消除单元格默认间距 */
         margin-top: -8px; /* 上移补偿空白 */
       }
 
-      #summaryTable tr:first-child td {
-        padding-top: 4px; /* 减少首行内边距 */
-        border-top: none; /* 移除首行上边框 */
+      /* 添加Canvas样式 */
+      #brandChart {
+        max-width: 100%;
+        max-height: 100%;
       }
 
       #summaryTable th,
@@ -641,9 +640,54 @@
       #chartContainer {
         width: 100%;
         height: 100%;
-      }      
+      }     
 
-      /* 【以下】饼图响应式调整 - 小于992px时缩小容器宽度 */
+      /*===== 详细列表按扭样式 ===== */
+      .card-header .toggle-icon {
+        background: none;
+        border: none;
+        color: var(--primary);
+        font-size: 1.2rem;
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 50%;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        margin-left: 8px; /* 添加与文字间距 */
+        vertical-align: middle; /* 确保垂直居中 */
+      }
+
+      .card-header .toggle-icon:hover {
+        background-color: rgba(229, 62, 62, 0.1); /* 淡红色背景 */
+        color: #e53e3e; /* 红色图标 */
+        transform: scale(1.2);
+        font-weight: bold; /* 加粗效果 */
+      }
+
+      .card-header .toggle-icon:hover i {
+        filter: drop-shadow(0 0 1px rgba(229, 62, 62, 0.5)); /* 红色光晕效果 */
+      }
+
+      /* 当详细部分可见时，旋转图标 */
+      .detail-section.visible ~ .card-body .card-header .toggle-icon i {
+        transform: rotate(180deg);
+      }
+
+      /* 响应式调整 */
+      @media (max-width: 768px) {
+        .card-header .toggle-icon {
+          font-size: 1rem;
+          width: 32px;
+          height: 32px;
+          margin-left: 6px;
+        }
+      }
+      
+      /* 以下【饼图】响应式调整 - 小于992px时缩小容器宽度 */
       @media (max-width: 992px) {
         .summary-content {
           gap: 1rem; /* 缩小间距 */
@@ -678,7 +722,7 @@
         }
       }
 
-      /*===== 【以下】主界面响应式设计 ======*/
+      /*===== 以下【主界面】响应式设计 ======*/
       @media (max-width: 1400px) {
         .filters-row { 
           grid-template-columns: repeat(3, 1fr);
@@ -737,12 +781,6 @@
           justify-content: center;
         }
         
-        .info-text {
-          width: 100%;
-          text-align: center;
-          margin-top: 1rem;
-        }
-        
         .select-box {
           padding-right: 2rem; /* 为清除按钮留出空间 */
           
@@ -754,7 +792,27 @@
             max-height: 80px; /* 移动端允许更多空间 */
           }
         }
-      }
+
+        .detail-section {
+          overflow-x: auto; /* 添加水平滚动 */
+          width: 100%; /* 确保宽度占满父容器 */
+          -webkit-overflow-scrolling: touch; /* 优化移动端滚动体验 */
+        }
+  
+        #detailTable {
+          min-width: auto; /* 移除固定最小宽度 */
+          width: max-content; /* 允许表格根据内容扩展 */
+          font-size: 0.85em; /* 减小字体大小 */
+          table-layout: auto; /* 允许列宽自适应内容 */
+        }
+        
+        #detailTable th, 
+        #detailTable td {
+          white-space: nowrap; /* 防止文本换行 */
+          min-width: 60px; /* 设置最小列宽 */
+          padding: 0.5rem; /* 减小内边距 */
+        }
+      }        
   </style>
 </head>
 <body>
@@ -847,9 +905,6 @@
               <i class="fas fa-search"></i> 查询数据
             </button>
           </div>
-          <div class="info-text">
-            <i class="fas fa-info-circle"></i> 品牌和商品支持多选，选择品牌后商品列表会自动过滤
-          </div>
         </div>
       </div>
     </div>
@@ -902,13 +957,14 @@
     
     <div class="card">
       <div class="card-header">
-        <h2><i class="fas fa-list"></i> 详细销售记录</h2>
+        <h2>
+          <i class="fas fa-list"></i> 详细销售记录
+          <button class="toggle-icon" id="toggleDetails">
+            <i class="fas fa-chevron-down"></i>
+          </button>
+        </h2>
       </div>
       <div class="card-body">
-        <div class="toggle-details" id="toggleDetails">
-          <i class="fas fa-chevron-down"></i> 点击显示详细销售记录
-        </div>
-        
         <div class="detail-section" id="detailSection">
           <table id="detailTable">
             <thead>
