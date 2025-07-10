@@ -820,9 +820,9 @@ function renderBrandPieChart(brandSummaries) {
             weight: 'bold',
             size: 12
           },
-          align: 'start',
-          anchor: 'end',
-          offset: 30,
+          align: 'end',
+          anchor: 'center',
+          offset: 10,
           clip: false,
           textAlign: 'center'
         }
