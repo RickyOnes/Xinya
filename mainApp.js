@@ -818,7 +818,7 @@ function renderBrandPieChart(brandSummaries) {
           color: '#222',
           font: {
             weight: 'bold',
-            size: 12
+            size: window.innerWidth <= 768 ? 8 : 12
           },
           align: 'end',
           anchor: 'center',
