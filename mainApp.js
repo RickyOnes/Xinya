@@ -815,7 +815,7 @@ function renderBrandPieChart(brandSummaries) {
             
             return `${label}\n${percentage}%`;
           },
-          color: '#fff',
+          color: '#222',
           font: {
             weight: 'bold',
             size: 12
@@ -823,7 +823,6 @@ function renderBrandPieChart(brandSummaries) {
           align: 'end',
           anchor: 'center',
           offset: 0,
-          clamp: true, // 防止标签超出图表边界
           clip: false,
           textAlign: 'center',
           padding: 2
