@@ -822,9 +822,11 @@ function renderBrandPieChart(brandSummaries) {
           },
           align: 'end',
           anchor: 'center',
-          offset: 10,
+          offset: 0,
+          clamp: true, // 防止标签超出图表边界
           clip: false,
-          textAlign: 'center'
+          textAlign: 'center',
+          padding: 2
         }
       },
       animation: {
