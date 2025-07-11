@@ -35,7 +35,7 @@
         line-height: 1.6; /* 提高可读性 */
         color: var(--text-primary); 
         background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
-        padding: 20px; 
+        padding: 15px; 
         min-height: 100vh; 
       }
       
@@ -113,7 +113,7 @@
       }
       
       .card-body { 
-        padding: 1.8rem; 
+        padding: 1.2rem; 
         overflow: visible;
       }
       
@@ -535,7 +535,6 @@
       }
       
       .detail-section {
-        margin-top: 2rem; 
         display: none;
         
         &.visible {
@@ -793,14 +792,21 @@
         }
       
         /* 以下为小屏【下拦框】样式 */
+        /* 下拉菜单容器 */
+        .options-container {
+          overflow-x: auto;  /* 允许水平滚动 */
+          -webkit-overflow-scrolling: touch; /* 优化移动端滚动体验 */          
+          width: 100%;
+        }
+
         .option {
           padding: 8px 16px;
           align-items: flex-start;  /* 子元素顶部对齐（更紧凑） */
           justify-content: flex-start;  /* 整体靠左对齐 */
-          width: auto;  /* 不占满屏幕宽度 */
-          overflow-x: auto;  /* 允许水平滚动 */
+          width: max-content; /* 允许表格根据内容扩展 */
           white-space: nowrap; /* 禁止文字换行 */
-          -webkit-overflow-scrolling: touch; /* 优化移动端滚动体验 */
+          font-size: 0.85em; /* 减小字体大小 */
+          table-layout: auto; /* 允许列宽自适应内容 */
           
           input { /* 复选框样式 */
             margin-right: 6px;
