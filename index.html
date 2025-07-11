@@ -203,12 +203,12 @@
       /* 多选下拉框样式 - 优化合并 */
       .custom-multiselect {
         position: relative;
-        width: 100%;
+        /*width: 100%;*/
       }
       
       .select-box {
         position: relative;
-        padding: 0.7rem 2rem 0.7rem 1rem;
+        padding: 0.7rem 1rem 0.7rem 1rem;
         border: 1px solid var(--border);
         border-radius: 8px;
         background: white;
@@ -218,7 +218,7 @@
         z-index: 1;
         min-height: 50px;
         transition: border-color 0.3s, box-shadow 0.3s;
-        overflow: hidden;
+        overflow: hidden;/* 超出部分隐藏 */
         
         /* 悬停效果 */
         &:hover {
@@ -231,7 +231,7 @@
           flex-wrap: wrap;
           gap: 4px;
           padding: 2px 0;
-          width: 100%;
+         /* width: 100%;*/
           min-height: 26px; /* 最小高度 */
           max-height: 130px; /* 最大高度 */
           overflow-y: auto; /* 内容过多时滚动 */
@@ -240,7 +240,7 @@
             background-color: #eef2ff;
             color: var(--primary);
             border-radius: 16px;
-            padding: 4px 10px;
+            padding: 4px 0 4px 8px;  /* 上、右、下、左 */
             font-size: 0.85rem;
             display: flex;
             align-items: center;
@@ -780,8 +780,18 @@
         }
         
         .select-box {
-          padding-right: 2rem; /* 为清除按钮留出空间 */
-          
+        .tag {
+          /* 关键调整 */
+          font-size: clamp(0.65rem, 1vw, 0.85rem); /* 动态字体大小 */
+          min-width: 0 !important;
+          flex: 0 1 auto;
+          overflow: hidden; /* 隐藏溢出内容 */
+          text-overflow: ellipsis; /* 超出显示省略号 */
+          white-space: nowrap;
+
+          /* 增加内边距兼容性 */
+          padding: 4px 6px; /* 上下4px，左右6px更协调 */
+          }
           .clear-btn {
             right: 5px;
           }
@@ -801,20 +811,15 @@
 
         .option {
           padding: 8px 16px;
-          align-items: flex-start;  /* 子元素顶部对齐（更紧凑） */
+          /*align-items: flex-start;  /* 子元素顶部对齐（更紧凑） */
           justify-content: flex-start;  /* 整体靠左对齐 */
           width: max-content; /* 允许表格根据内容扩展 */
           white-space: nowrap; /* 禁止文字换行 */
           font-size: 0.85em; /* 减小字体大小 */
           table-layout: auto; /* 允许列宽自适应内容 */
-          
-          input { /* 复选框样式 */
-            margin-right: 6px;
-          }
-          
+        
           label {
             white-space: nowrap; /* 禁止文字换行 */
-            flex-shrink: 0;  /* 防止文字被压缩 */
           }
         }
       
