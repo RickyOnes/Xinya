@@ -749,6 +749,27 @@
         .filter-group:nth-child(5) {
           grid-column: 1 / 3;
         }
+
+        /* 以下为【销售明细】样式 */
+        .detail-section {
+          overflow-x: auto; /* 添加水平滚动 */
+          width: 100%; /* 确保宽度占满父容器 */
+          -webkit-overflow-scrolling: touch; /* 优化移动端滚动体验 */
+        }
+  
+        #detailTable {
+          min-width: auto; /* 移除固定最小宽度 */
+          width: max-content; /* 允许表格根据内容扩展 */
+          font-size: 0.9em; /* 减小字体大小 */
+          table-layout: auto; /* 允许列宽自适应内容 */
+        }
+        
+        #detailTable th, 
+        #detailTable td {
+          white-space: nowrap; /* 防止文本换行 */
+          min-width: 60px; /* 设置最小列宽 */
+          padding: 0.6rem; /* 减小内边距 */
+        }        
       }
       
       @media (max-width: 768px) {
