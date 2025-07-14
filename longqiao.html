@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel 数据上传至 Supabase</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <link rel="icon" href="app32x32.png" type="image/x-icon">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 0; /* 新增关键属性 */
+            height: 100%; /* 新增关键属性 */            
+        }
+        
+        header {
+            background: linear-gradient(to right, #1a2a6c, #b21f1f);
+            color: white;
+            padding: 15px 40px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .content {
+            display: flex;
+            padding: 15px;
+            gap: 15px;/* 列间距 */
+            flex: 1; /* 新增：填充剩余空间 */
+            min-height: 0; /* 新增：允许内部收缩 */
+        }
+        
+        .upload-section {
+            flex: 1;
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;            
+        }
+        
+        .preview-section {
+            flex: 1;
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            min-height: 0; /* 关键属性 */
+            overflow: hidden;
+            max-height: 100%; /* 新增 */
+        }
+        
+        h2 {
+            color: #1a2a6c;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #b21f1f;
+            font-size: 1.8rem;
+        }
+        
+        .upload-area {
+            border: 3px dashed #1a2a6c;
+            border-radius: 10px;
+            padding: 10px 20px; /* 减少内边距 */
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(26, 42, 108, 0.05);
+            margin-bottom: 20px;
+            height: auto; /* 确保高度自适应 */
+           /* max-height: 150px; /* 设置最小高度 */
+        }
+        
+        .upload-area:hover {
+            background: rgba(26, 42, 108, 0.1);
+            border-color: #b21f1f;
+        }
+        
+        .upload-area i {
+            font-size: 2rem;
+            color: #1a2a6c;
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        .upload-area h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #1a2a6c;
+        }
+        
+        .upload-area p {
+            color: #666;
+            margin-bottom: 15px;
+        }
+        
+        .btn {
+            background: linear-gradient(to right, #1a2a6c, #b21f1f);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            display: inline-block;
+            margin: 10px 5px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        .btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #1a2a6c;
+            color: #1a2a6c;
+        }
+        
+        #fileInfoDisplay {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(26, 42, 108, 0.05);
+            border-radius: 8px;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+        
+        #fileInfoDisplay p {
+            margin: 5px 0;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .status.success {
+            background: rgba(40, 167, 69, 0.2);
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: rgba(220, 53, 69, 0.2);
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.processing {
+            background: rgba(23, 162, 184, 0.2);
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .data-preview {
+            flex: 1;
+            overflow-y: auto; 
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            display: flex; /* 新增flex布局 */
+            flex-direction: column; /* 垂直排列 */
+            min-height: 0; /* 关键属性 */
+            width: 100%; /* 确保宽度填满父容器 */
+        }
+
+        .data-preview:hover {
+            overflow-y: auto; /* 鼠标悬停时显示滚动条 */
+        }        
+
+        /* 关键修改：让表格本身自适应高度 */
+        #previewTable {
+            width: 100%;
+            border-collapse: collapse;
+            display: block; /* 重要：让表格作为块级元素 */
+            max-height: 100%; /* 限制高度不超过容器 */
+            overflow-y: auto;
+            table-layout: fixed; /* 关键：固定列宽 */
+        }   
+        #previewBody {
+            display: block; /* 使tbody也可以滚动 */
+          /*  overflow-y: auto; /* 默认隐藏滚动条 */
+            max-height: calc(100vh - 40px); /* 根据你的布局调整这个值 */
+            width: 100%;
+        }   
+        /* 自定义滚动条样式 */
+        #previewTable::-webkit-scrollbar {
+            width: 4px; /* 调整滚动条宽度 */
+            background-color: #f5f5f5;
+        }
+
+        #previewTable::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, #1a2a6c, #b21f1f);
+            border-radius: 3px;
+        }
+
+        #previewTable::-webkit-scrollbar-track {
+            background: rgba(26, 42, 108, 0.1);
+            border-radius: 3px;
+        }
+
+        table {
+            width: 100%;
+        }
+
+        /* 明确指定每列的宽度 */
+        th:first-child, td:first-child {
+            width: 10%; /* 销售日期 */
+        }
+
+        th:nth-child(2), td:nth-child(2) {
+            width: 10%; /* 产品ID */
+        }
+
+        th:nth-child(3), td:nth-child(3) {
+            width: 20%; /* 产品名称 */
+        }
+
+        th:nth-child(4), td:nth-child(4) {
+            width: 15%; /* 客户名称 */
+        }
+
+        th:nth-child(5) {
+            width: 15%; /* 业务员 */
+            text-align: center !important;
+        }
+
+        td:nth-child(5) {
+            width: 15%; /* 业务员 */
+            text-align: right !important;
+        }
+
+        th:nth-child(6), td:nth-child(6) {
+            width: 10%; /* 销售数量 */
+            text-align: right !important;
+        }
+
+        th:nth-child(7), td:nth-child(7) {
+            width: 10%; /* 销售金额 */
+            text-align: right !important;
+        }
+
+        th:nth-child(8), td:nth-child(8) {
+            width: 10%; /* 成本金额 */
+            text-align: right !important;
+        }
+
+        /* 表头样式 */
+        th {
+            background: #1a2a6c;
+            color: white;
+            position: sticky;
+            top: 0;
+            font-size: 0.85rem;
+            box-sizing: border-box; /* 确保 padding 不影响宽度 */
+            padding: 5px;
+            text-align: left;
+        }
+
+        /* 单元格样式 */
+        td {
+            border-bottom: 1px solid #eee;
+            font-size: 0.85rem;
+            box-sizing: border-box; /* 确保 padding 不影响宽度 */
+            padding: 5px;
+            text-align: left;
+        }
+
+        /* 奇偶行背景色 */
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        
+        .progress-container {
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(to right, #1a2a6c, #b21f1f);
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .step {
+            display: flex;
+            align-items: center;
+            margin:0  0 15px 0;
+        }
+        
+        .step-number {
+            width: 30px;
+            height: 30px;
+            background: #1a2a6c;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+        
+        .step-text {
+            font-size: 1.1rem;
+        }    
+
+        .red-text {
+            color: #b21f1f; /* 使用与主题一致的红颜色 */
+            font-weight: bold;
+        }
+
+        @media (max-width: 900px) {
+            .content {
+                flex-direction: column;
+            }
+            
+            header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><img src="icon64.png" alt="应用图标" style="border-radius: 10px;"> Excel 数据上传至 Supabase服务器</h1>
+            <p>上传商品销售明细汇总表，解析数据并保存到云数据库</p>
+        </header>
+        
+        <div class="content">
+            <div class="upload-section">
+                <h2>打开数据源</h2>
+                
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-text">选择Excel文件（<span class="red-text">商品销售明细汇总表.xls</span>）</div>
+                </div>
+                
+                <div id="uploadArea" class="upload-area">
+                    <i>📁</i>
+                    <h3>拖放文件到此处或点击上传</h3>
+                    <p>支持 .xls 或 .xlsx 格式文件</p>
+                    <button class="btn">选择文件</button>
+                    <input type="file" id="fileInput" accept=".xls,.xlsx" style="display:none;">
+                    <!-- 添加文件信息显示区域 -->
+                    <div id="fileInfoDisplay" style="display: none;">
+                        <p><strong>文件名：</strong> <span id="fileName"></span></p>
+                        <p><strong>文件大小：</strong> <span id="fileSize"></span></p>
+                    </div>                    
+                </div>
+                               
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-text">上传数据到数据库</div>
+                </div>
+                
+                <div class="progress-container">
+                    <div id="progressBar" class="progress-bar"></div>
+                </div>
+                
+                <div id="status" class="status"></div>
+                
+                <div class="controls">
+                    <button id="uploadBtn" class="btn" disabled>上传到数据库</button>
+                    <button id="resetBtn" class="btn btn-outline">重置</button>
+                </div>
+            </div>
+            
+            <div class="preview-section">
+                <h2>数据预览</h2>
+                
+                <div class="data-preview">
+                    <table id="previewTable">
+                        <thead>
+                            <tr>
+                                <th>销售
+                                    日期</th>
+                                <th>产品
+                                    ID</th>
+                                <th>产品<br>
+                                    名称</th>
+                                <th>客户<br>
+                                    名称</th>
+                                <th>业务<br>
+                                    人员</th>
+                                <th>销售
+                                    数量</th>
+                                <th>销售
+                                    金额</th>
+                                <th>成本
+                                    金额</th>
+                            </tr>
+                        </thead>
+                        <tbody id="previewBody">
+                            <tr>
+                                <td>
+                                    数据解析后将显示在此处
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Supabase客户端初始化
+        const SUPABASE_URL = 'https://iglmqwpagzjadwauvchh.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlnbG1xd3BhZ3pqYWR3YXV2Y2hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4ODk4NDAsImV4cCI6MjA2NjQ2NTg0MH0.Mtiwp31mJvbLRTotbrb4_DobjjpM4kg9f4-G8oWz85E';
+        let supabaseClient;
+
+        // 修改后的初始化代码
+        try {
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+                auth: {
+                    persistSession: false // 禁用会话持久化
+                },
+                global: {
+                    headers: {
+                        'apikey': SUPABASE_KEY // 明确添加 apikey 头
+                    }
+                }
+            });
+            console.log('Supabase客户端初始化成功');
+        } catch (error) {
+            console.error('Supabase初始化失败:', error);
+            alert('系统初始化失败，请刷新页面或联系管理员'); 
+        }
+        // DOM元素
+        const fileInput = document.getElementById('fileInput');
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInfo = document.getElementById('fileInfo');
+        const parseBtn = document.getElementById('parseBtn');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const previewBody = document.getElementById('previewBody');
+        const statusDiv = document.getElementById('status');
+        const progressBar = document.getElementById('progressBar');
+        const fileInfoDisplay = document.getElementById('fileInfoDisplay');
+        const fileNameSpan = document.getElementById('fileName');
+        const fileSizeSpan = document.getElementById('fileSize');        
+        
+        // 全局变量
+        let excelData = null;
+        let parsedData = [];
+        
+        // 事件监听器
+        uploadArea.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', handleFileSelect);
+        uploadBtn.addEventListener('click', uploadToSupabase);
+        resetBtn.addEventListener('click', resetAll);
+        
+        // 拖放功能
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#b21f1f';
+            uploadArea.style.backgroundColor = 'rgba(178, 31, 31, 0.1)';
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.borderColor = '#1a2a6c';
+            uploadArea.style.backgroundColor = 'rgba(26, 42, 108, 0.05)';
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#1a2a6c';
+            uploadArea.style.backgroundColor = 'rgba(26, 42, 108, 0.05)';
+            
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                handleFileSelect(e);
+            }
+        });
+        
+        // 处理文件选择
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            if (!file.name.match(/\.(xls|xlsx)$/i)) {
+                showStatus('错误：请选择Excel文件（.xls 或 .xlsx）', 'error');
+                return;
+            }
+
+            // 在上传区域显示文件信息
+            fileNameSpan.textContent = file.name;
+            fileSizeSpan.textContent = `${(file.size / 1024).toFixed(2)} KB`;
+            fileInfoDisplay.style.display = 'block';
+            
+            // 更新上传区域提示文本
+            uploadArea.querySelector('h3').textContent = '已选择文件';
+            uploadArea.querySelector('p').textContent = '点击此处可重新选择文件';
+            
+            // 读取文件内容
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                excelData = data;
+                
+                // 先显示处理中状态
+                showStatus('正在解析Excel数据...', 'processing');
+                
+                // 使用 setTimeout 让 UI 有机会更新
+                setTimeout(parseExcel, 50);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+        
+        // 解析Excel数据
+        function parseExcel() {
+            if (!excelData) {
+                showStatus('错误：请先选择Excel文件', 'error');
+                return;
+            }
+            // 显示处理中状态
+            showStatus(`正在解析Excel数据...`, 'processing');      
+
+            try {
+                const workbook = XLSX.read(excelData, {type: 'array'});
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+
+                // 获取 A1 单元格的值
+                const a1Value = worksheet['A1'] ? worksheet['A1'].v : '';
+
+                // 判断 A1 是否是 "商品销售明细汇总表"
+                if (a1Value !== '商品销售明细汇总表') {
+                    resetAll(); // 可选：重置所有输入
+                    showStatus('数据源文件选择错误，请重新选择正确的文件', 'error');
+                    return;
+                }                
+                
+                // 获取所有数据（JSON格式）
+                const allData = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+                
+                // 从第18行开始（索引17）提取C-J列（索引2-9）
+                parsedData = [];
+                for (let i = 17; i < allData.length; i++) {
+                    const row = allData[i];
+                    
+                    // 处理数据
+                    const record = {
+                        sale_date: formatDate(excelDateToJSDate(row[2])),          // C列销售日期
+                        product_id: String(row[3] || ''),                          // D列商品ID
+                        product_name: row[4] || '',                                // E列商品名称
+                        customer: row[5] || '',                                    // F列客户名称
+                        sales: row[6] || "管理员",                                  // G列销售人员
+                        quantity: Number.isInteger(parseFloat(row[7]) || 0) 
+                            ? parseFloat(row[7]) || 0 
+                            : Math.round((parseFloat(row[7]) || 0) * 10) / 10,     // H列销售数量
+                        amount: parseFloat(row[8]) || 0,                           // I列销售金额
+                        cost: parseFloat(row[9]) || 0                              // J列成本金额
+                    };
+
+                    // 添加到解析数据数组
+                    parsedData.push(record);
+                }
+                
+                // 更新预览表格
+                updatePreviewTable();
+                
+                // 启用上传按钮
+                uploadBtn.disabled = false;
+                showStatus(`成功解析 ${parsedData.length} 条记录`, 'success');
+                
+            } catch (error) {
+                console.error('解析错误:', error);
+                showStatus(`解析错误: ${error.message}`, 'error');
+            }
+        }
+        
+        // 日期格式化辅助函数
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // Excel 日期转换函数（使用 xlsx.js 内置方法）
+        function excelDateToJSDate(excelSerialDate) {
+            const dateParts = XLSX.SSF.parse_date_code(excelSerialDate);
+            if (!dateParts) return new Date(NaN);
+            return new Date(dateParts.y, dateParts.m - 1, dateParts.d);
+        }
+
+        // 更新预览表格
+        function updatePreviewTable() {
+            if (parsedData.length === 0) {
+                previewBody.innerHTML = `
+                    <tr>
+                        <td>
+                            没有解析到数据
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // 显示记录
+            let html = '';
+            parsedData.forEach((record, index) => {
+                html += `
+                    <tr>
+                        <td>${record.sale_date}</td>
+                        <td>${record.product_id}</td>
+                        <td>${record.product_name}</td>
+                        <td>${record.customer}</td>
+                        <td>${record.sales}</td>
+                        <td>${record.quantity}</td>
+                        <td>${record.amount}</td>
+                        <td>${record.cost}</td>
+                    </tr>
+                `;
+            });
+            
+            previewBody.innerHTML = html;
+        }
+        
+        // 上传到Supabase
+        async function uploadToSupabase() {
+            if (parsedData.length === 0) {
+                showStatus('错误：没有可上传的数据', 'error');
+                return;
+            }
+            
+            // 禁用按钮
+            uploadBtn.disabled = true;
+            showStatus(`正在上传数据到数据库...`, 'processing');
+            
+            try {
+                // 重置进度条
+                progressBar.style.width = '0%';
+                
+                // 分批上传（每次100条）
+                const batchSize = 100;
+                let successCount = 0;
+                let errorCount = 0;
+                
+                for (let i = 0; i < parsedData.length; i += batchSize) {
+                    const batch = parsedData.slice(i, i + batchSize);
+                    const { error } = await supabaseClient
+                        .from('longqiao_records')
+                        .insert(batch);
+                    
+                    if (error) {
+                        console.error('插入错误:', error.message, error);
+                        errorCount += batch.length;
+                    } else {
+                        successCount += batch.length;
+                    }
+                    
+                    // 更新进度
+                    const progress = Math.min(100, Math.round((i + batchSize) / parsedData.length * 100));
+                    progressBar.style.width = `${progress}%`;
+                    
+                    showStatus(`上传中... ${i + batchSize}/${parsedData.length} 条记录`, 'processing');
+                    
+                    // 添加一点延迟，避免过快请求
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                }
+                
+                // 显示最终结果
+                if (errorCount === 0) {
+                    showStatus(`成功上传所有 ${successCount} 条记录到数据库`, 'success');
+                } else {
+                    showStatus(`上传完成：成功 ${successCount} 条，失败 ${errorCount} 条`, errorCount > 0 ? 'error' : 'success');
+                }
+                
+            } catch (error) {
+                console.error('上传错误:', error);
+                showStatus(`上传错误: ${error.message}`, 'error');
+            } finally {
+                uploadBtn.disabled = false;
+            }
+        }
+        
+        // 重置所有
+        function resetAll() {
+            // 只有在没有处理中任务时才显示重置消息
+            if (!statusDiv.classList.contains('processing')) {
+                showStatus('已重置，请选择新文件', 'success');
+            } else {
+                // 处理中时不显示重置消息
+                statusDiv.textContent = '';
+                statusDiv.className = 'status';
+            }            
+            fileInput.value = '';
+            excelData = null;
+            parsedData = [];
+            
+            // 重置上传区域显示
+            fileInfoDisplay.style.display = 'none';
+            uploadArea.querySelector('h3').textContent = '拖放文件到此处或点击上传';
+            uploadArea.querySelector('p').textContent = '支持 .xls 或 .xlsx 格式文件';
+            
+            // 重置预览区域
+            previewBody.innerHTML = `
+                <tr>
+                    <td colspan="8" style="text-align: center;">
+                        数据解析后将显示在此处
+                    </td>
+                </tr>
+            `;
+            
+            uploadBtn.disabled = true;
+            statusDiv.textContent = '';
+            statusDiv.className = 'status';
+            progressBar.style.width = '0%';
+            
+            showStatus('请选择要处理的文件', 'success');
+        }
+        
+        // 显示状态消息
+        function showStatus(message, type) {
+            statusDiv.textContent = message;
+            statusDiv.className = 'status';
+            
+            if (type === 'success') {
+                statusDiv.classList.add('success');
+            } else if (type === 'error') {
+                statusDiv.classList.add('error');
+            } else if (type === 'processing') {
+                statusDiv.classList.add('processing');
+            }
+        }
+        
+        // 初始化
+        resetAll();
+    </script>
+</body>
+</html>
