@@ -165,34 +165,51 @@
       padding: 0.85rem 1.8rem; 
       border-radius: 8px; 
       cursor: pointer; 
-      font-size: 1rem; 
+      font-size: 1.2rem; 
       font-weight: 600; 
       transition: all 0.3s ease; 
       display: inline-flex;
       align-items: center;
       gap: 8px;
+      box-shadow: 0 4px 10px rgba(67, 97, 238, 0.3);
     }
     
     button:hover { 
       transform: translateY(-2px); 
       box-shadow: 0 6px 12px rgba(67, 97, 238, 0.3);
     }
-    
-    .btn-query {
-      padding: 0.9rem 2.2rem;
-      font-size: 1.05rem;
-      box-shadow: 0 4px 10px rgba(67, 97, 238, 0.25);
+
+    .btn-secondary {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      border: 1px solid var(--border);
     }
     
-    .btn-query i {
-      font-size: 1.1rem;
+    .btn-secondary:hover {
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
+      box-shadow: 0 6px 12px rgba(5, 150, 105, 0.3);
     }
-    
-    /* 新增查询按钮悬停加深效果 */
+
     .btn-query:hover {
         background: linear-gradient(135deg, #3a55d4 0%, #3630b0 100%);
         box-shadow: 0 6px 15px rgba(58, 85, 212, 0.4);
-    }      
+    }  
+    
+    #switchWarehouseBtn {
+      background: linear-gradient(135deg, #FF9F40 0%, #FF7F00 100%) !important;
+      box-shadow: 0 4px 10px rgba(255, 159, 64, 0.25);
+    }
+
+    #switchWarehouseBtn:hover {
+      background: linear-gradient(135deg, #FF7F00 0%, #FF6600 100%) !important;
+      box-shadow: 0 6px 12px rgba(255, 127, 0, 0.4);
+    }
+
+    /* 添加仓库图标的橙色悬停效果 */
+    #switchWarehouseBtn:hover .fa-warehouse {
+      color: #fff;
+      filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
+    }    
 
     /* 多选下拉框样式 - 优化合并 */
     .custom-multiselect {
@@ -234,7 +251,7 @@
           background-color: #eef2ff;
           color: var(--primary);
           border-radius: 16px;
-          padding: 4px 0 4px 8px;  /* 上、右、下、左 */
+          padding: 4px 4px 4px 8px;  /* 上、右、下、左 */
           font-size: 0.85rem;
           display: flex;
           align-items: center;
@@ -442,9 +459,10 @@
     }
     
     .stat-label {
-      font-size: 1rem;
+      font-size: 1.2rem;
       color: var(--text-secondary);
-      font-weight: 500;
+      font-weight: bold;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
     }
     
     .summary-card { 
@@ -459,16 +477,16 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      background: rgba(255, 255, 255, 0.9);
+      background: rgb(235, 245, 255);
       border-radius: 12px;
       padding: 2rem;
       text-align: center;
       z-index: 1000;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     }
 
     .spinner {
-      border: 4px solid rgba(67, 97, 238, 0.1);
+      border: 4px solid rgba(67, 97, 238, 0.15);
       width: 50px;
       height: 50px;
       border-radius: 50%;
@@ -503,17 +521,18 @@
       gap: 0.8rem;
     }
     
-    .btn-secondary {
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-      color: white;
-      border: 1px solid var(--border);
+
+    /* 按扭图标统一大小规则 */
+    .action-buttons button i {
+        font-size: 0.9em;
+        width: 1.1em;
+        text-align: center;
+    }  
+
+    .fa-warehouse {
+        transform: scale(0.7); /* 轻微缩小 */
     }
-    
-    .btn-secondary:hover {
-      background: linear-gradient(135deg, #059669 0%, #047857 100%);
-      box-shadow: 0 6px 12px rgba(5, 150, 105, 0.3);
-    }
-    
+
     /* 详细记录切换 */
     .toggle-details {
       display: inline-block;
@@ -669,6 +688,13 @@
       transform: rotate(180deg);
     }
 
+    #detailCount {  /* 详细部分计数器 */
+      font-size: 1.3rem;
+      color: #f3350f;
+      font-weight: bold;
+      vertical-align: middle;
+    }   
+
     /* 响应式调整 */
     @media (max-width: 768px) {
       .card-header .toggle-icon {
@@ -808,7 +834,13 @@
         width: 100%;
         justify-content: center;
       }
-      
+
+      button { 
+        padding: 0.8rem 1rem; 
+        font-size: 1.1rem; 
+        gap:6px;
+      }    
+
       .select-box {
       .tag {
         /* 关键调整 */
@@ -875,6 +907,23 @@
       }
     }  
     
+    @media (max-width: 450px) {
+      #detailCount {  /* 详细部分计数器 */
+        font-size: 1.1rem !important;
+        color: #f3350f;
+        font-weight: bold;
+        vertical-align: middle;
+      }   
+      .card-header h2 {
+        font-size: 1.1rem;
+      }   
+      button { 
+        padding: 0.5rem 0.8rem; 
+        font-size: 1rem; 
+        gap:5px;
+      }             
+    }
+
     /*===== 以下为【认证表单】样式====== */
     .auth-form {
       display: none;
@@ -1104,6 +1153,9 @@
               <button id="queryBtn" class="btn-query">
                 <i class="fas fa-search"></i> 查询数据
               </button>
+              <button id="switchWarehouseBtn" class="btn-secondary">
+                <i class="fas fa-warehouse"></i> 切换仓库
+              </button>              
             </div>
           </div>
         </div>
@@ -1123,6 +1175,10 @@
               <div class="stat-label">总金额</div>
               <div id="totalAmount" class="stat-value">¥0.00</div>
             </div>
+            <div class="stat-card" id="profitCard" style="display: none;">
+              <div class="stat-label">利润</div>
+              <div id="totalProfit" class="stat-value">¥0.00</div>
+            </div>            
             <div class="stat-card">
               <div class="stat-label">品牌数量</div>
               <div id="totalBrands" class="stat-value">0</div>
@@ -1159,6 +1215,7 @@
         <div class="card-header">
           <h2>
             <i class="fas fa-list"></i> 详细销售记录
+            <span id="detailCount"></span>
             <button class="toggle-icon" id="toggleDetails">
               <i class="fas fa-chevron-down"></i>
             </button>

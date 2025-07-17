@@ -27,6 +27,7 @@ const totalProductsEl = document.getElementById('totalProducts');
 const totalBrandsEl = document.getElementById('totalBrands');
 const toggleDetails = document.getElementById('toggleDetails');
 const detailSection = document.getElementById('detailSection');
+const switchWarehouseBtn = document.getElementById('switchWarehouseBtn'); // 切换仓库按钮
 
 // 多选下拉框元素
 const warehouseSelector = document.getElementById('warehouseSelector');
@@ -59,6 +60,8 @@ let brandMap = {};
 let currentOpenDropdown = null;
 let selectedProducts = []; 
 let user = null; // 全局用户状态
+let currentWarehouse = 'default'; // 'default' 或 'longqiao'
+let allSalesPersons = []; // 销售人员列表
 
 // ============== 4. 工具函数 ==============
 // 数字格式化
@@ -81,7 +84,7 @@ function setDefaultDates() {
 
   const endDate = new Date();
   const startDate = new Date();
-  startDate.setDate(endDate.getDate() - 2);
+  startDate.setDate(1); // 设置为当月1号
   
   endDateEl.value = formatDate(endDate);
   startDateEl.value = formatDate(startDate);
@@ -111,7 +114,7 @@ async function initAuth() {
     return false;
   }
 }
-
+// ============== 弹窗提示函数 ==============
 function showRoundedAlert(message, type = 'error') {
   // 移除已有的提示容器
   const existingAlert = document.getElementById('custom-alert');
@@ -147,6 +150,66 @@ function showRoundedAlert(message, type = 'error') {
     setTimeout(() => alertContainer.remove(), 300);
   }, 2000);
 }
+
+// ============== 仓库切换功能 ==============
+function switchWarehouse() {
+  // 切换仓库状态
+  currentWarehouse = currentWarehouse === 'default' ? 'longqiao' : 'default';
+      
+  clearPieChart(); // 清除饼图数据  
+  loadData();// 重新加载数据
+  
+  // 重新加载筛选选项
+  loadFilterOptions().then(() => {
+    // 重置下拉框选择
+    warehouseMultiSelect.reset();
+    brandMultiSelect.reset();
+    productMultiSelect.reset();
+    updateUIForWarehouse();  // 更新UI
+    updateDetailTableHeader(); // 新增：更新表头
+  });
+}
+
+// ****更新UI****
+function updateUIForWarehouse() {
+  const header = document.querySelector('header h1');
+  const profitCard = document.getElementById('profitCard');
+  
+  if (currentWarehouse === 'longqiao') {
+    header.innerHTML = `<img src="icon64.png" alt="应用图标" style="border-radius: 8px;"> 隆桥仓库销售数据查询系统`;
+    document.querySelector('.filter-group label:has(i.fas.fa-warehouse)').innerHTML = `<i class="fas fa-user"></i> 销售人员`;
+    profitCard.style.display = 'block';
+  } else {
+    header.innerHTML = `<img src="icon64.png" alt="应用图标" style="border-radius: 8px;"> 多多买菜销售数据查询系统`;
+    document.querySelector('.filter-group label:has(i.fas.fa-user)').innerHTML = `<i class="fas fa-warehouse"></i> 仓库`;
+    profitCard.style.display = 'none';
+  }
+}
+
+// ***更新详细记录表头****
+function updateDetailTableHeader() {
+  const thead = document.querySelector('#detailTable thead');
+  let headerHTML = `
+    <tr>
+      <th>日期</th>
+      <th>商品ID</th>
+      <th>商品名称</th>
+      <th>品牌</th>
+      <th>${currentWarehouse === 'longqiao' ? '销售人员' : '仓库'}</th>
+      <th>销量</th>
+      <th>${currentWarehouse === 'longqiao' ? '成本' : '单价'}</th>
+      <th>金额</th>
+  `;
+  
+  if (currentWarehouse === 'longqiao') {
+    headerHTML += `<th>利润</th>`;
+  }
+  
+  headerHTML += `</tr>`;
+  
+  thead.innerHTML = headerHTML;
+}
+
 
 // ============== 5. 下拉框管理 （类+全局事件） ==============
 class MultiSelect {
@@ -277,6 +340,11 @@ class MultiSelect {
       selectedProducts = [];
       filterProductsByBrand();
     }
+
+    // 新增：仓库选择变化时，重新加载品牌和商品选项
+    if (this.selector.id === 'warehouseSelector') {
+      reloadBrandAndProductOptions();
+    }    
   }
 
   updateDisplay() { // 更新显示
@@ -426,8 +494,8 @@ function closeAllDropdowns() {
 // 全局下拉框实例
 let warehouseMultiSelect, brandMultiSelect, productMultiSelect;
 
-// ============== 6. 品牌与商品过滤 ==============
-// 根据品牌过滤商品选项
+// ============== 6. 仓库/人员、品牌与商品过滤 ==============
+// ****根据品牌过滤商品选项****
 function filterProductsByBrand() {
   // 清空商品选项容器
   productOptions.innerHTML = '';
@@ -487,55 +555,48 @@ function filterProductsByBrand() {
   );
 }
 
-// ============== 7. 数据加载与处理 ==============
-// 加载筛选选项
-async function loadFilterOptions() {
+// ****按仓库/人员，重新加载品牌和商品选项****
+async function reloadBrandAndProductOptions() {
   if (!supabaseClient) {
-    showRoundedAlert('错误: Supabase客户端未初始化','error');
     return;
   }
-  
+
   try {
-    // 智能分批查询函数 - 解决Supabase默认1000行限制问题
-    async function fetchAllRecords() {
-      let allRecords = [];
-      let batchSize = 1000; // 保持默认限制
-      let from = 0;
-      let hasMore = true;
-
-      while (hasMore) {
-        const { data, error } = await supabaseClient
-          .from('sales_records')
-          .select('warehouse, product_id, product_name, brand')
-          .not('warehouse', 'is', null)
-          .not('product_id', 'is', null)
-          .range(from, from + batchSize - 1); // 使用范围查询分批获取
-
-        if (error) throw error;
-        
-        allRecords = [...allRecords, ...data];
-        from += batchSize;
-        
-        // 检测是否还有更多数据
-        hasMore = data.length === batchSize;
-      }
-
-      return allRecords;
-    }
-
-    // 获取完整销售记录
-    const salesRecords = await fetchAllRecords();
-    console.log(`获取完整销售记录: ${salesRecords.length}条`);
+    // 获取当前日期范围
+    const startDate = startDateEl.value;
+    const endDate = endDateEl.value;
     
-    // 处理仓库数据
-    allWarehouses = [...new Set(salesRecords.map(record => record.warehouse))].sort();
+    // 根据当前仓库选择不同的查询
+    const table = currentWarehouse === 'longqiao' ? 'longqiao_records' : 'sales_records';
+    const fields = currentWarehouse === 'longqiao' 
+      ? ['sales', 'product_id', 'product_name', 'brand'] 
+      : ['warehouse', 'product_id', 'product_name', 'brand'];
+    
+    // 构建查询条件（只查询当前日期范围内的记录）
+    const conditions = {
+      sale_date: { gte: startDate, lte: endDate }
+    };
+    
+    // 添加仓库筛选条件（如果仓库有选中的话）
+    if (currentWarehouse === 'longqiao') {
+      if (warehouseMultiSelect.selectedValues.length > 0) {
+        conditions.sales = warehouseMultiSelect.selectedValues;
+      }
+    } else {
+      if (warehouseMultiSelect.selectedValues.length > 0) {
+        conditions.warehouse = warehouseMultiSelect.selectedValues;
+      }
+    }
+    
+    // 使用通用函数获取数据
+    const salesRecords = await fetchRecords(table, fields, conditions);
     
     // 处理商品和品牌数据
     const uniqueProducts = new Map();
-    brandMap = {};
+    brandMap = {}; // 重置品牌映射
     
     salesRecords.forEach(record => {
-      if (!uniqueProducts.has(record.product_id)) {
+      if (record.product_id && !uniqueProducts.has(record.product_id)) {
         uniqueProducts.set(record.product_id, {
           product_id: record.product_id,
           product_name: record.product_name
@@ -548,10 +609,149 @@ async function loadFilterOptions() {
     });
     
     allProductsData = Array.from(uniqueProducts.values());
-    allBrands = [...new Set(salesRecords.map(record => record.brand))].filter(b => b).sort();
+    allBrands = [...new Set(salesRecords.map(record => record.brand))]
+      .filter(b => b) // 过滤掉空值
+      .sort();
+
+    // 更新品牌下拉框选项
+    brandMultiSelect.setOptions(
+      allBrands.map(brand => ({ value: brand, label: brand }))
+    );
     
+    // 更新商品下拉框选项（根据当前品牌选择过滤）
+    filterProductsByBrand();
+    
+  } catch (error) {
+    console.error('重新加载品牌和商品选项失败:', error);
+  }
+}
+
+// ============== 7. 数据加载与处理 ==============
+// ****通用数据获取函数（支持分页）*****
+async function fetchRecords(tableName, fields, conditions = {}) {
+  if (!supabaseClient) {
+    throw new Error('Supabase客户端未初始化');
+  }
+
+  try {
+    const batchSize = 1000; // 每批次获取的记录数
+    let allData = []; // 存储所有数据
+    let from = 0; // 起始位置
+    let hasMore = true; // 是否还有更多数据
+
+    // 构建基础查询
+    let baseQuery = supabaseClient
+      .from(tableName)
+      .select(fields.join(','));
+
+    // 应用查询条件
+    Object.entries(conditions).forEach(([key, value]) => {
+      if (Array.isArray(value)) {
+        baseQuery = baseQuery.in(key, value);
+      } else if (value !== undefined) {
+        if (typeof value === 'object' && value.gte && value.lte) {
+          baseQuery = baseQuery.gte(key, value.gte).lte(key, value.lte);
+        } else {
+          baseQuery = baseQuery.eq(key, value);
+        }
+      }
+    });
+
+    // 分批次获取所有数据
+    while (hasMore) {
+      // 创建当前批次的查询（复制基础查询并添加范围限制）
+      let query = baseQuery.range(from, from + batchSize - 1);
+      
+      const { data, error } = await query;
+      
+      if (error) throw error;
+      
+      // 添加当前批次的数据
+      if (data && data.length > 0) {
+        allData = [...allData, ...data];
+      }
+      
+      // 检查是否还有更多数据
+      hasMore = data.length === batchSize;
+      from += batchSize;
+    }
+    console.log(`Total records: ${allData.length}`);
+    return allData;
+  } catch (error) {
+    console.error(`从 ${tableName} 获取数据失败:`, error);
+    throw error;
+  }
+}
+
+// 加载筛选选项
+async function loadFilterOptions() {
+  if (!supabaseClient) {
+    showRoundedAlert('错误: Supabase客户端未初始化', 'error');
+    return;
+  }
+  
+  try {
+    // 获取当前日期范围
+    const startDate = startDateEl.value;
+    const endDate = endDateEl.value ;
+    
+    // 根据当前仓库选择不同的查询
+    const table = currentWarehouse === 'longqiao' ? 'longqiao_records' : 'sales_records';
+    const fields = currentWarehouse === 'longqiao' 
+      ? ['sales', 'product_id', 'product_name', 'brand'] 
+      : ['warehouse', 'product_id', 'product_name', 'brand'];
+    
+    // 构建查询条件（只查询当前日期范围内的记录）
+    const conditions = {
+      sale_date: { gte: startDate, lte: endDate }
+    };
+    
+    // 使用通用函数获取数据
+    const salesRecords = await fetchRecords(table, fields, conditions);
+    
+    // 处理仓库数据
+    let warehouses = [];
+    if (salesRecords.length > 0) {
+      const warehouseKey = currentWarehouse === 'longqiao' ? 'sales' : 'warehouse';
+      warehouses = [...new Set(salesRecords.map(record => record[warehouseKey]))]
+        .filter(wh => wh) // 过滤掉空值
+        .sort();
+    }
+    allWarehouses = warehouses;
+    
+    // 处理品牌和商品数据
+    brandMap = {};
+    let brands = [];
+    let products = [];
+    
+    if (salesRecords.length > 0) {
+      const uniqueProducts = new Map();
+    
+      salesRecords.forEach(record => {
+        if (record.product_id && !uniqueProducts.has(record.product_id)) {
+          uniqueProducts.set(record.product_id, {
+            product_id: record.product_id,
+            product_name: record.product_name
+          });
+        }
+        
+        if (record.product_id && record.brand) {
+          brandMap[record.product_id] = record.brand;
+        }
+      });
+      
+      products = Array.from(uniqueProducts.values());
+      brands = [...new Set(salesRecords.map(record => record.brand))]
+        .filter(b => b) // 过滤掉空值
+        .sort();
+    }
+    
+    allBrands = brands;
+    allProductsData = products;
+
     // 初始化多选下拉框实例
-    warehouseMultiSelect = new MultiSelect(warehouseSelector, warehouseOptions, '仓库');
+    warehouseMultiSelect = new MultiSelect(warehouseSelector, warehouseOptions, 
+      currentWarehouse === 'longqiao' ? '销售人员' : '仓库');
     brandMultiSelect = new MultiSelect(brandSelector, brandOptions, '品牌');
     productMultiSelect = new MultiSelect(productSelector, productOptions, '商品');
 
@@ -564,14 +764,14 @@ async function loadFilterOptions() {
       allBrands.map(brand => ({ value: brand, label: brand }))
     );
     
-    // 修复点：初始商品选项使用完整列表
+    // 初始商品选项
     productMultiSelect.setOptions(
       allProductsData.map(p => ({ value: p.product_id, label: p.product_name }))
     );
     
     return Promise.resolve();
   } catch (error) {
-    showRoundedAlert('筛选选项加载失败: ' + error.message, 'error'); // 替换alert
+    showRoundedAlert('筛选选项加载失败: ' + error.message, 'error');
     return Promise.reject(error);
   }
 }
@@ -580,54 +780,71 @@ async function loadFilterOptions() {
 async function loadData() {
   // 检查用户是否登录
   if (!user) {
-    showRoundedAlert('请先登录系统', 'warning'); // 替换alert
+    showRoundedAlert('请先登录系统', 'warning');
     return;
   }
 
   if (!supabaseClient) {
-    showRoundedAlert('系统未初始化，请刷新页面', 'error'); // 替换alert
+    showRoundedAlert('系统未初始化，请刷新页面', 'error');
     return;
   }
 
   // 显示悬浮加载动画
   loadingEl.style.display = 'block';
+  showLoadingOverlay(); // 添加遮罩层
 
-  // 清除表格内容
+  // 清除表格和饼图内容
   summaryTable.innerHTML = '';
   detailTable.innerHTML = '';
+  clearPieChart(); 
 
   const startDate = startDateEl.value;
   const endDate = endDateEl.value;
 
   try {
-    let query = supabaseClient
-      .from('sales_records')
-      .select('sale_date, product_id, product_name, warehouse, quantity, unit_price, brand')
-      .gte('sale_date', startDate)
-      .lte('sale_date', endDate);
+    // 根据当前仓库选择不同的查询
+    const table = currentWarehouse === 'longqiao' ? 'longqiao_records' : 'sales_records';
+    
+    // 设置查询字段
+    const fields = currentWarehouse === 'longqiao'
+      ? ['sale_date', 'product_id', 'product_name', 'sales', 'quantity', 'customer', 'amount', 'cost', 'brand']
+      : ['sale_date', 'product_id', 'product_name', 'warehouse', 'quantity', 'unit_price', 'brand'];
+    
+    // 设置查询条件
+    const conditions = {};
 
-    if (warehouseMultiSelect.selectedValues.length > 0) {
-      query = query.in('warehouse', warehouseMultiSelect.selectedValues);
+    // 添加日期范围条件
+    if (startDate && endDate) {
+      conditions.sale_date = { gte: startDate, lte: endDate };
     }
-
+    
+    // 添加筛选条件
+    if (currentWarehouse === 'longqiao') {
+      if (warehouseMultiSelect.selectedValues.length > 0) {
+        conditions.sales = warehouseMultiSelect.selectedValues;
+      }
+    } else {
+      if (warehouseMultiSelect.selectedValues.length > 0) {
+        conditions.warehouse = warehouseMultiSelect.selectedValues;
+      }
+    }
+    
     if (brandMultiSelect.selectedValues.length > 0) {
-      query = query.in('brand', brandMultiSelect.selectedValues);
+      conditions.brand = brandMultiSelect.selectedValues;
     }
-
+    
     if (productMultiSelect.selectedValues.length > 0) {
-      query = query.in('product_id', productMultiSelect.selectedValues);
+      conditions.product_id = productMultiSelect.selectedValues;
     }
 
-    const { data, error } = await query;
-
-    if (error) throw error;
+    // 使用通用函数获取数据
+    const data = await fetchRecords(table, fields, conditions);
 
     renderDetailTable(data);
     calculateSummary(data);
 
   } catch (error) {
     console.error('查询错误详情:', error);
-    // 显示错误信息
     loadingEl.innerHTML = `
       <div style="text-align: center; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
         <div style="color: #e53e3e; font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
@@ -638,18 +855,23 @@ async function loadData() {
   } finally {
     // 隐藏加载动画
     loadingEl.style.display = 'none';
+    hideLoadingOverlay(); // 移除遮罩层
   }
 }
-
 // 渲染详细表格
 function renderDetailTable(data) {
   const tbody = detailTable;
   tbody.innerHTML = '';
+
+  // 获取显示数据条数的元素
+  const detailCountEl = document.getElementById('detailCount');
   
   if (!data || data.length === 0) {
+    // 更新数据条数显示
+    detailCountEl.textContent = '(0条数据)';
     tbody.innerHTML = `
       <tr>
-        <td colspan="8" style="text-align: center; padding: 30px; color: #6c757d;">
+        <td colspan="${currentWarehouse === 'longqiao' ? 9 : 8}" style="text-align: center; padding: 30px; color: #6c757d;">
           <i class="fas fa-database" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
           未找到匹配的记录
         </td>
@@ -658,20 +880,41 @@ function renderDetailTable(data) {
     return;
   }
   
+  // 更新数据条数显示
+  detailCountEl.textContent = `(${data.length}条)`;
+
   data.forEach(record => {
     const row = document.createElement('tr');
-    const amount = (record.quantity || 0) * (record.unit_price || 0);
+    let amount, warehouseField,cost;
     
+    if (currentWarehouse === 'longqiao') {
+      amount = record.amount || 0;
+      warehouseField = record.sales || '--';
+      cost = record.cost || 0;
+    } else {
+      amount = (record.quantity || 0) * (record.unit_price || 0);
+      warehouseField = record.warehouse || '--';
+      cost = record.unit_price || 0;
+    }
+    
+    // 基础行
     row.innerHTML = `
       <td>${record.sale_date || '--'}</td>
       <td>${record.product_id || '--'}</td>
       <td>${record.product_name || '--'}</td>
       <td>${record.brand || '--'}</td>
-      <td>${record.warehouse || '--'}</td>
+      <td>${warehouseField}</td>
       <td>${formatNumber(record.quantity || 0)}</td>
-      <td>¥${formatNumber(record.unit_price || 0)}</td>
+       <td>${cost}</td>
       <td>¥${formatNumber(amount)}</td>
     `;
+    
+    // 隆桥仓库显示利润列
+    if (currentWarehouse === 'longqiao') {
+      const profit = (record.amount || 0) - (record.cost || 0);
+      row.innerHTML += `<td>¥${formatNumber(profit)}</td>`;
+    }
+    
     tbody.appendChild(row);
   });
 }
@@ -683,9 +926,15 @@ function calculateSummary(data) {
     totalAmountEl.textContent = '¥0.00';
     totalProductsEl.textContent = '0';
     totalBrandsEl.textContent = '0';
+    
+    // 隆桥仓库显示利润
+    if (currentWarehouse === 'longqiao') {
+      document.getElementById('totalProfit').textContent = '¥0.00';
+    }
+    
     summaryTable.innerHTML = `
       <tr>
-        <td colspan="4" style="text-align: center; padding: 30px; color: #6c757d;">
+        <td colspan="3" style="text-align: center; padding: 30px; color: #6c757d;">
           <i class="fas fa-chart-bar" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
           无汇总数据
         </td>
@@ -697,10 +946,20 @@ function calculateSummary(data) {
   // 计算总销量和总金额
   let totalQuantity = 0;
   let totalAmount = 0;
+  let totalProfit = 0; // 隆桥仓库专用
   
   data.forEach(record => {
+    let amount;
+    
+    if (currentWarehouse === 'longqiao') {
+      amount = record.amount || 0;
+      totalProfit += amount - (record.cost || 0);
+    } else {
+      amount = (record.quantity || 0) * (record.unit_price || 0);
+    }
+    
     totalQuantity += record.quantity || 0;
-    totalAmount += (record.quantity || 0) * (record.unit_price || 0);
+    totalAmount += amount;
   });
 
   // 计算品牌数量和商品种类
@@ -718,11 +977,16 @@ function calculateSummary(data) {
   totalBrandsEl.textContent = formatNumber(uniqueBrands.size);
   totalProductsEl.textContent = formatNumber(uniqueProducts.size);
   
-  // 按日期和品牌汇总
+  // 隆桥仓库显示利润
+  if (currentWarehouse === 'longqiao') {
+    document.getElementById('totalProfit').textContent = `¥${formatNumber(totalProfit)}`;
+  }
+  
+  // 按品牌汇总
   const summaryMap = new Map();
   
   data.forEach(record => {
-    const brand = record.brand || '未知品牌'; // 处理空品牌情况
+    const brand = record.brand || '未知品牌';
     
     if (!summaryMap.has(brand)) {
       summaryMap.set(brand, {
@@ -734,7 +998,12 @@ function calculateSummary(data) {
     
     const summary = summaryMap.get(brand);
     summary.total_quantity += (record.quantity || 0);
-    summary.total_amount += (record.quantity || 0) * (record.unit_price || 0);
+    
+    if (currentWarehouse === 'longqiao') {
+      summary.total_amount += (record.amount || 0);
+    } else {
+      summary.total_amount += (record.quantity || 0) * (record.unit_price || 0);
+    }
   });
   
   // 按品牌名称排序
@@ -742,7 +1011,7 @@ function calculateSummary(data) {
     a.brand.localeCompare(b.brand)
   );
   
-  // === 修改点2: 渲染汇总表格（只显示品牌）===
+  // 渲染汇总表格
   summaryTable.innerHTML = '';
   
   sortedSummaries.forEach(summary => {
@@ -755,8 +1024,12 @@ function calculateSummary(data) {
     summaryTable.appendChild(row);
   });
   
-  // === 新增: 渲染饼图 ===
-  renderBrandPieChart(sortedSummaries);
+  // 渲染饼图
+  if (data && data.length > 0) {
+    renderBrandPieChart(sortedSummaries);
+  } else {
+    clearPieChart(); // 新增：清空饼图
+  }
 
   setTimeout(() => {
     syncContainersDimensions();
@@ -922,6 +1195,19 @@ function renderBrandPieChart(brandSummaries) {
 }
 
 // ============== 8. 其他功能 ==============
+
+// ***清除饼图函数 ***
+function clearPieChart() {
+  const chartContainer = document.getElementById('chartContainer');
+  chartContainer.innerHTML = '<div class="no-chart-data">无品牌数据可展示</div>';
+  
+  // 清除图表实例引用
+  if (chartContainer.chartInstance) {
+    chartContainer.chartInstance.destroy();
+    chartContainer.chartInstance = null;
+  }
+}
+
 // 清除筛选按扭函数
 function clearFilters() {
   // 检查用户是否登录
@@ -940,11 +1226,14 @@ function clearFilters() {
   
   // 重置商品列表
   filterProductsByBrand();
+
+  // 清除饼图数据
+  clearPieChart();  
   
   // 重新设置默认日期
   setDefaultDates();
   
-  // 直接加载数据（移除loadFilterOptions调用）
+  // 直接加载数据
   loadData();
 }
 
@@ -958,6 +1247,40 @@ function toggleDetailSection() {
     icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
   } else {
     icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+  }
+}
+
+// **** 新增遮罩层函数 ****
+function showLoadingOverlay() {
+  // 创建或获取遮罩层
+  let overlay = document.getElementById('loading-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'loading-overlay';
+    overlay.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(255, 255, 255, 0.2);
+      z-index: 999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: blur(2px);
+    `;
+    document.body.appendChild(overlay);
+  } else {
+    overlay.style.display = 'flex';
+  }
+}
+
+// **** 移除遮罩层函数 ****
+function hideLoadingOverlay() {
+  const overlay = document.getElementById('loading-overlay');
+  if (overlay) {
+    overlay.style.display = 'none';
   }
 }
 
@@ -978,7 +1301,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
    // 初始化认证状态
   const isAuthenticated = await initAuth();
-  loadingEl.style.display = 'none'; // 添加这行
+  loadingEl.style.display = 'none'; // 隐藏加载动画
+  // 添加切换仓库按钮事件监听
+  document.getElementById('switchWarehouseBtn').addEventListener('click', switchWarehouse);
   
   // 认证标签切换
   authTabs.forEach(tab => {
@@ -1105,6 +1430,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 如果用户已登录，初始化应用
   if (isAuthenticated) {
     initializeApp();
+    updateDetailTableHeader(); // 新增：初始化表头
   }
 }); 
 
@@ -1126,11 +1452,23 @@ function initializeApp() {
     return;
   } 
 
-  // 设置默认日期
-  loadFilterOptions()
-    .then(() => {
-      setDefaultDates();
-      
+  // 设置默认日期：当月1号到今天
+  setDefaultDates();
+
+  // 添加日期变化监听（带防抖）
+  let debounceTimer;
+  const handleDateChange = () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      loadFilterOptions().catch(console.error);
+    }, 500); // 500ms防抖
+  };
+
+  // 绑定日期输入框的变化事件
+  startDateEl.addEventListener('change', handleDateChange);
+  endDateEl.addEventListener('change', handleDateChange);
+
+  loadFilterOptions().then(() => {
       // 绑定事件
       queryBtn.addEventListener('click', loadData);
       clearBtn.addEventListener('click', clearFilters);
