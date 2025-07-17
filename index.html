@@ -905,6 +905,46 @@
         min-width: 60px; /* 设置最小列宽 */
         padding: 0.5rem; /* 减小内边距 */
       }
+
+      /* 加载动画优化 */
+      .loading {
+        width: 70%; /* 增加宽度占比 */
+        max-width: 260px; /* 设置最大宽度 */
+        padding: 1.2rem; /* 减小内边距 */
+        top: 40%; /* 调整垂直位置 */
+        transform: translate(-50%, -40%); /* 配合位置调整 */
+      }
+      
+      .spinner {
+        width: 36px; /* 减小尺寸 */
+        height: 36px;
+        margin-bottom: 0.8rem; /* 减小间距 */
+      }
+      
+      .loading p {
+        font-size: 1rem; /* 减小字体大小 */
+        margin-top: -0.5rem; /* 上移文本 */
+      }
+      
+      /* 增加加载图标大小调整 */
+      .loading i.fas {
+        font-size: 2rem; /* 减小图标尺寸 */
+      }
+      
+      /* 错误提示样式优化 */
+      .loading > div {
+        padding: 15px; /* 减小内边距 */
+      }
+      
+      .loading > div > div {
+        font-size: 2.5rem; /* 减小警告图标 */
+        margin-bottom: 0.5rem;
+      }
+      
+      .loading > div > p {
+        font-size: 1.1rem; /* 减小标题字体 */
+        margin-bottom: 0.3rem;
+      }      
     }  
     
     @media (max-width: 450px) {
