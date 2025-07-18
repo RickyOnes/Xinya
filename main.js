@@ -863,6 +863,13 @@ function renderDetailTable(data) {
   const tbody = detailTable;
   tbody.innerHTML = '';
 
+  // 修改点：按时间从小到大排序
+  if (data && data.length > 0) {
+    data.sort((a, b) => {
+      return new Date(a.sale_date) - new Date(b.sale_date);
+    });
+  }
+
   // 获取显示数据条数的元素
   const detailCountEl = document.getElementById('detailCount');
   
@@ -1034,9 +1041,9 @@ function calculateSummary(data) {
       }
   });
   
-  // 按品牌名称排序
+  // 按销售额从大到小排序
   const sortedSummaries = Array.from(summaryMap.values()).sort((a, b) => 
-    a.brand.localeCompare(b.brand)
+    b.total_amount - a.total_amount
   );
   
   // 渲染汇总表格
@@ -1112,21 +1119,35 @@ function renderBrandPieChart(brandSummaries) {
     return;
   }  
   
-  // 改进的颜色生成器 - 增加对比度
+  // 饼图颜色生成器 
   const generateColors = (count) => {
-    const baseColors = [
-      '#36A2EB', // 蓝色
-      '#F15BB5',  // 粉红
-      '#FFCE56', // 黄色
-      '#FF6384', // 红色
-      '#9966FF', // 紫色
-      '#FF9F40', // 橙色
-      '#8AC926', // 绿色
-      '#6A4C93', // 深紫
-      '#4BC0C0', // 青色
-      '#1982C4' // 深蓝
-    ];
-    
+    if (currentWarehouse === 'longqiao') {
+       baseColors = [
+        '#4BC0C0', // 青色
+        '#f54444ff', // 红色
+        '#36A2EB', // 蓝色
+        '#F15BB5',  // 粉红        
+        '#FFCE56', // 黄色
+        '#26cd3cff', // 绿色
+        '#9966FF', // 紫色
+        '#FF9F40', // 橙色
+        '#1982C4', // 深蓝
+        '#6A4C93' // 深紫
+      ];      
+    }else {
+       baseColors = [
+        '#26cd3cff', // 绿色
+        '#FFCE56', // 黄色
+        '#f54444ff', // 红色
+        '#36A2EB', // 蓝色
+        '#F15BB5',  // 粉红      
+        '#9966FF', // 紫色
+        '#FF9F40', // 橙色
+        '#6A4C93', // 深紫
+        '#4BC0C0', // 青色
+        '#1982C4' // 深蓝
+      ];
+    }
     // 当品牌数量超过基础颜色时，生成随机颜色
     if (count > baseColors.length) {
       for (let i = baseColors.length; i < count; i++) {
@@ -1145,7 +1166,7 @@ function renderBrandPieChart(brandSummaries) {
       datasets: [{
         data: brandSummaries.map(item => item.total_amount),
         backgroundColor: generateColors(brandSummaries.length),
-        borderWidth: 2,
+        borderWidth: 1,
         borderColor: '#fff',
         hoverOffset: 15,
         radius: '95%' // 设置饼图大小为95%
