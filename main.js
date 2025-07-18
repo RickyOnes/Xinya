@@ -912,7 +912,8 @@ function renderDetailTable(data) {
     // 隆桥仓库显示利润列
     if (currentWarehouse === 'longqiao') {
       const profit = (record.amount || 0) - (record.cost || 0);
-      row.innerHTML += `<td>¥${formatNumber(profit)}</td>`;
+      const profitStyle = profit < 0 ? 'style="color: #e53e3e; font-weight: bold;"' : '';
+      row.innerHTML += `<td ${profitStyle}>¥${formatNumber(profit)}</td>`;
     }
     
     tbody.appendChild(row);
@@ -921,6 +922,27 @@ function renderDetailTable(data) {
 
 // 计算汇总数据
 function calculateSummary(data) {
+  const summaryTableEl = document.getElementById('summaryTable');
+  let thead = summaryTableEl.querySelector('thead');
+  if (!thead) {
+    thead = document.createElement('thead');
+    summaryTableEl.insertBefore(thead, summaryTableEl.firstChild);
+  }
+
+  // 根据仓库类型设置表头
+  let headerHTML = `<tr><th>品牌</th><th>总销量</th><th>总金额</th>`;
+  if (currentWarehouse === 'longqiao') {
+      headerHTML += `<th>总成本</th><th>利润</th>`;
+  }
+  headerHTML += `</tr>`;
+  thead.innerHTML = headerHTML;
+
+  let tbody = summaryTableEl.querySelector('tbody');
+  if (!tbody) {
+      tbody = document.createElement('tbody');
+      summaryTableEl.appendChild(tbody);
+  }
+
   if (!data || data.length === 0) {
     totalQuantityEl.textContent = '0';
     totalAmountEl.textContent = '¥0.00';
@@ -931,10 +953,11 @@ function calculateSummary(data) {
     if (currentWarehouse === 'longqiao') {
       document.getElementById('totalProfit').textContent = '¥0.00';
     }
-    
-    summaryTable.innerHTML = `
+    // 根据仓库类型决定列数
+    const colCount = currentWarehouse === 'longqiao' ? 5 : 3;    
+    tbody.innerHTML = `
       <tr>
-        <td colspan="3" style="text-align: center; padding: 30px; color: #6c757d;">
+          <td colspan="${colCount}" style="text-align: center; padding: 30px; color: #6c757d;">
           <i class="fas fa-chart-bar" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
           无汇总数据
         </td>
@@ -984,26 +1007,31 @@ function calculateSummary(data) {
   
   // 按品牌汇总
   const summaryMap = new Map();
-  
   data.forEach(record => {
-    const brand = record.brand || '未知品牌';
-    
-    if (!summaryMap.has(brand)) {
-      summaryMap.set(brand, {
-        brand: brand,
-        total_quantity: 0,
-        total_amount: 0
-      });
-    }
-    
-    const summary = summaryMap.get(brand);
-    summary.total_quantity += (record.quantity || 0);
-    
-    if (currentWarehouse === 'longqiao') {
-      summary.total_amount += (record.amount || 0);
-    } else {
-      summary.total_amount += (record.quantity || 0) * (record.unit_price || 0);
-    }
+      const brand = record.brand || '未知品牌';
+      
+      if (!summaryMap.has(brand)) {
+          summaryMap.set(brand, {
+              brand: brand,
+              total_quantity: 0,
+              total_amount: 0,
+              total_cost: 0,   // 新增
+              profit: 0        // 新增
+          });
+      }
+      
+      const summary = summaryMap.get(brand);
+      summary.total_quantity += (record.quantity || 0);
+      
+      if (currentWarehouse === 'longqiao') {
+          const cost = record.cost || 0;
+          const amount = record.amount || 0;
+          summary.total_amount += amount;
+          summary.total_cost += cost;
+          summary.profit += (amount - cost);
+      } else {
+          summary.total_amount += (record.quantity || 0) * (record.unit_price || 0);
+      }
   });
   
   // 按品牌名称排序
@@ -1012,17 +1040,30 @@ function calculateSummary(data) {
   );
   
   // 渲染汇总表格
-  summaryTable.innerHTML = '';
+  tbody.innerHTML = ''; // 清空 tbody 而不是整个表格 
   
   sortedSummaries.forEach(summary => {
     const row = document.createElement('tr');
-    row.innerHTML = `
-      <td>${summary.brand}</td>
-      <td>${formatNumber(summary.total_quantity)}</td>
-      <td>¥${formatNumber(summary.total_amount)}</td>
+    let rowHTML = `
+        <td>${summary.brand}</td>
+        <td>${formatNumber(summary.total_quantity)}</td>
+        <td>¥${formatNumber(summary.total_amount)}</td>
     `;
-    summaryTable.appendChild(row);
-  });
+    
+    if (currentWarehouse === 'longqiao') {
+        const profitStyle = summary.profit < 0 
+            ? 'style="color: #e53e3e; font-weight: bold;"' 
+            : '';
+        
+        rowHTML += `
+            <td>¥${formatNumber(summary.total_cost)}</td>
+            <td ${profitStyle}>¥${formatNumber(summary.profit)}</td>
+        `;
+    }
+    
+    row.innerHTML = rowHTML;
+    tbody.appendChild(row);
+});
   
   // 渲染饼图
   if (data && data.length > 0) {

@@ -607,30 +607,36 @@
       }
     }
 
-    /* 汇总表格样式保持不变 */
+    /* 汇总表格样式 */
     #summaryTable {
-      table-layout: fixed;
+      table-layout: auto; /* 改为自动宽度 */
       width: 100%;
+      border-collapse: collapse;
+      margin-top: -8px; /* 上移补偿空白 */      
     }
 
-    #summaryTable th:nth-child(1),
-    #summaryTable td:nth-child(1) {
-      width: 30%;
-      max-width: 150px;
-      overflow: hidden;
-      text-overflow: ellipsis;
+    #summaryTable th, 
+    #summaryTable td {
+      padding: 12px;
+      white-space: nowrap; /* 防止文本换行 */
+      border-bottom: 1px solid var(--border);
     }
 
-    #summaryTable th:nth-child(2),
-    #summaryTable td:nth-child(2) {
-      width: 35%;
-      text-align: right;
+    #summaryTable th {
+      text-align: center; /* 表头文字居中 */
+      background-color: #f1f5fd;
+      position: sticky;
+      top: 0;
     }
 
-    #summaryTable th:nth-child(3),
-    #summaryTable td:nth-child(3) {
-      width: 35%;
-      text-align: right;
+    #summaryTable td:first-child, 
+    #summaryTable th:first-child {
+      text-align: left; /* 第一列品牌名称左对齐 */
+    }
+
+    #summaryTable td:not(:first-child),
+    #summaryTable th:not(:first-child) {
+      text-align: right; /* 所有数字列右对齐 */
     }
 
     /* 饼图主容器使用flex0布局 */
@@ -671,32 +677,10 @@
       position: relative; /* 确保图表正确定位 */
     }
 
-    /* 确保表格容器内部表格高度正确 */
-    #summaryTable {
-      width: 100%;
-      table-layout: fixed;
-      border-collapse: collapse;
-      /* border-spacing: 0; /* 消除单元格默认间距 */
-      margin-top: -8px; /* 上移补偿空白 */
-    }
-
     /* 添加Canvas样式 */
     #brandChart {
       max-width: 100%;
       max-height: 100%;
-    }
-
-    #summaryTable th,
-    #summaryTable td {
-      padding: 12px;
-      text-align: left;
-      border-bottom: 1px solid var(--border);
-    }
-
-    #summaryTable th {
-      background-color: #f1f5fd;
-      position: sticky;
-      top: 0;
     }
 
     /* 确保图表容器内部图表尺寸正确 */
@@ -774,7 +758,7 @@
       
       /* 优化表格字体大小 */
       #summaryTable {
-        font-size: 0.9em;
+        font-size: 1em;
       }
     }
 
@@ -790,7 +774,19 @@
         min-width: auto;
         flex: 1 1 auto;
       }
+
+      /* 优化表格字体大小 */
+      #summaryTable {
+        font-size: 0.9em;
+      }      
     }
+
+    @media (max-width: 450px) {
+      /* 优化表格字体大小 */
+      #summaryTable {
+        font-size: 0.8em;
+      }      
+    }      
 
     /*===== 以下【主界面】响应式设计 ======*/
     @media (max-width: 1400px) {
