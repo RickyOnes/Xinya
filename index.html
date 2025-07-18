@@ -477,23 +477,66 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      background: rgb(235, 245, 255);
-      border-radius: 12px;
-      padding: 2rem;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      border-radius: 24px;
+      padding: 2.5rem;
       text-align: center;
       z-index: 1000;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      box-shadow: 
+        0 8px 32px rgba(31, 38, 135, 0.2),
+        0 0 0 1px rgba(255, 255, 255, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      overflow: hidden;
     }
 
+    /* 添加玻璃态效果伪元素 */
+    .loading::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(
+        135deg, 
+        rgba(255, 255, 255, 0.4) 0%, 
+        rgba(255, 255, 255, 0.1) 100%
+      );
+      z-index: -1;
+      border-radius: 24px;
+    }
+
+    /* 新的旋转动画 */
     .spinner {
-      border: 4px solid rgba(67, 97, 238, 0.15);
-      width: 50px;
-      height: 50px;
+      position: relative;
+      width: 70px;
+      height: 70px;
+      margin: 0 auto 1.8rem;
+    }
+
+    .spinner::before,
+    .spinner::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       border-radius: 50%;
-      border-left-color: var(--primary);
-      animation: spin 1s linear infinite;
-      display: inline-block;
-      margin-bottom: 1.5rem;
+      border: 4px solid transparent;
+      animation: spin 1.5s linear infinite;
+    }
+
+    .spinner::before {
+      border-top-color: #4361ee;
+      border-right-color: #4361ee;
+      animation-delay: -0.5s;
+    }
+
+    .spinner::after {
+      border-bottom-color: #3f37c9;
+      border-left-color: #3f37c9;
     }
 
     @keyframes spin {
@@ -501,9 +544,18 @@
       100% { transform: rotate(360deg); }
     }
 
+    /* 添加脉冲效果 */
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.8; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
     .loading p {
       font-size: 1.2rem;
-      color: var(--text-secondary);
+      color: #4a5568;
+      font-weight: 500;
+      animation: pulse 2s infinite;
     }
     
     /* 控制按钮 */
@@ -908,43 +960,26 @@
 
       /* 加载动画优化 */
       .loading {
-        width: 70%; /* 增加宽度占比 */
-        max-width: 260px; /* 设置最大宽度 */
-        padding: 1.2rem; /* 减小内边距 */
-        top: 40%; /* 调整垂直位置 */
-        transform: translate(-50%, -40%); /* 配合位置调整 */
+        width: 80%;
+        max-width: 280px;
+        padding: 1.5rem;
+        border-radius: 18px;
       }
       
       .spinner {
-        width: 36px; /* 减小尺寸 */
-        height: 36px;
-        margin-bottom: 0.8rem; /* 减小间距 */
+        width: 50px;
+        height: 50px;
+        margin-bottom: 1.2rem;
+      }
+      
+      .spinner::before,
+      .spinner::after {
+        border-width: 3px;
       }
       
       .loading p {
-        font-size: 1rem; /* 减小字体大小 */
-        margin-top: -0.5rem; /* 上移文本 */
-      }
-      
-      /* 增加加载图标大小调整 */
-      .loading i.fas {
-        font-size: 2rem; /* 减小图标尺寸 */
-      }
-      
-      /* 错误提示样式优化 */
-      .loading > div {
-        padding: 15px; /* 减小内边距 */
-      }
-      
-      .loading > div > div {
-        font-size: 2.5rem; /* 减小警告图标 */
-        margin-bottom: 0.5rem;
-      }
-      
-      .loading > div > p {
-        font-size: 1.1rem; /* 减小标题字体 */
-        margin-bottom: 0.3rem;
-      }      
+        font-size: 1rem;
+      }  
     }  
     
     @media (max-width: 450px) {
