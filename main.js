@@ -90,7 +90,7 @@ function setDefaultDates() {
   startDateEl.value = formatDate(startDate);
 }
 
-// ============== 认证函数 ==============
+// **** 认证函数 ****
 async function initAuth() {
 
   if (!supabaseClient) {
@@ -114,7 +114,7 @@ async function initAuth() {
     return false;
   }
 }
-// ============== 弹窗提示函数 ==============
+// **** 弹窗提示函数 ****
 function showRoundedAlert(message, type = 'error') {
   // 移除已有的提示容器
   const existingAlert = document.getElementById('custom-alert');
@@ -176,11 +176,11 @@ function updateUIForWarehouse() {
   const profitCard = document.getElementById('profitCard');
   
   if (currentWarehouse === 'longqiao') {
-    header.innerHTML = `<img src="icon64.png" alt="应用图标" style="border-radius: 8px;"> 隆桥仓库销售数据查询系统`;
+    header.innerHTML = `<img src="icon64.png" alt="应用图标" style="border-radius: 8px; filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.5));"> 隆桥仓库销售数据查询系统`;
     document.querySelector('.filter-group label:has(i.fas.fa-warehouse)').innerHTML = `<i class="fas fa-user"></i> 销售人员`;
     profitCard.style.display = 'block';
   } else {
-    header.innerHTML = `<img src="icon64.png" alt="应用图标" style="border-radius: 8px;"> 多多买菜销售数据查询系统`;
+    header.innerHTML = `<img src="icon64.png" alt="应用图标" style="border-radius: 8px; filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.5));"> 多多买菜销售数据查询系统`;
     document.querySelector('.filter-group label:has(i.fas.fa-user)').innerHTML = `<i class="fas fa-warehouse"></i> 仓库`;
     profitCard.style.display = 'none';
   }
@@ -368,7 +368,7 @@ class MultiSelect {
     displayEl.style.display = 'flex';
     
     // 显示前3个选中项
-    const maxDisplay = 3;
+    const maxDisplay = 5;
     const displayValues = this.selectedValues.slice(0, maxDisplay);
     const remainingCount = this.selectedValues.length - maxDisplay;
     
