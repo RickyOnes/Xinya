@@ -202,7 +202,7 @@ function updateDetailTableHeader() {
   `;
   
   if (currentWarehouse === 'longqiao') {
-    headerHTML += `<th>利润</th>`;
+    headerHTML += `<th>毛利</th>`;
   }
   
   headerHTML += `</tr>`;
@@ -939,7 +939,7 @@ function calculateSummary(data) {
   // 根据仓库类型设置表头
   let headerHTML = `<tr><th>品牌</th><th>总销量</th><th>总金额</th>`;
   if (currentWarehouse === 'longqiao') {
-      headerHTML += `<th>总成本</th><th>利润</th>`;
+      headerHTML += `<th>总毛利</th><th>费用发放</th>`;
   }
   headerHTML += `</tr>`;
   thead.innerHTML = headerHTML;
@@ -973,73 +973,108 @@ function calculateSummary(data) {
     return;
   }
 
-  // 计算总销量和总金额
-  let totalQuantity = 0;
-  let totalAmount = 0;
-  let totalProfit = 0; // 隆桥仓库专用
-  
+  // 初始化统计变量
+  let totalQuantity = 0; // 总销量
+  let totalAmount = 0; // 总金额
+  let totalProfit = 0; // 总利润
+  let freeIssueAmount = 0;  // 费用发放
+  const uniqueBrands = new Set(); //品牌统计
+  const uniqueProducts = new Set(); //商品统计
+  const summaryMap = new Map(); // 汇总数据
+
+  // 单次遍历完成所有统计
   data.forEach(record => {
-    let amount;
-    
+    // 统计商品和品牌
+    if (record.product_id) uniqueProducts.add(record.product_id);
+    if (record.brand) uniqueBrands.add(record.brand);
+
+    // 计算金额和数量
+    let amount, cost;
     if (currentWarehouse === 'longqiao') {
       amount = record.amount || 0;
-      totalProfit += amount - (record.cost || 0);
-    } else {
-      amount = (record.quantity || 0) * (record.unit_price || 0);
+      cost = record.cost || 0;
+      
+      // 费用发放记录（销售额为0）
+      if (amount === 0) {
+        freeIssueAmount += cost;
+      } else { // 正常销售记录
+        const quantity = record.quantity || 0;
+        totalQuantity += quantity;
+        totalAmount += amount;
+        totalProfit += amount - cost;
+      }
+    } else { // 多多仓库
+      const quantity = record.quantity || 0;
+      const unitPrice = record.unit_price || 0;
+      amount = quantity * unitPrice;
+      totalQuantity += quantity;
+      totalAmount += amount;
+      cost = unitPrice;
     }
-    
-    totalQuantity += record.quantity || 0;
-    totalAmount += amount;
-  });
 
-  // 计算品牌数量和商品种类
-  const uniqueBrands = new Set();
-  const uniqueProducts = new Set();
-  
-  data.forEach(record => {
-    uniqueBrands.add(record.brand);
-    uniqueProducts.add(record.product_id);
+    // 按品牌汇总（只处理正常销售记录）
+    if (currentWarehouse !== 'longqiao' || amount !== 0) {
+      const brand = record.brand || '未知品牌';
+      
+      if (!summaryMap.has(brand)) {
+        summaryMap.set(brand, {
+          brand: brand,
+          total_quantity: 0,
+          total_amount: 0,
+          total_cost: 0,
+          profit: 0,
+          free_issue: 0  // 新增：记录该品牌的费用发放金额
+        });
+      }
+      // 更新汇总数据
+      const summary = summaryMap.get(brand); 
+      if (currentWarehouse === 'longqiao') {
+        summary.total_quantity += record.quantity || 0;
+        summary.total_amount += amount;
+        summary.total_cost += cost;
+        summary.profit += amount - cost;
+      } else {
+        summary.total_quantity += record.quantity || 0;
+        summary.total_amount += amount;
+      }
+    }
+
+    // 按品牌汇总费用发放记录（amount=0）
+    if (currentWarehouse === 'longqiao' && amount === 0) {
+      const brand = record.brand || '未知品牌';
+      
+      if (!summaryMap.has(brand)) {
+        summaryMap.set(brand, {
+          brand: brand,
+          total_quantity: 0,
+          total_amount: 0,
+          total_cost: 0,
+          profit: 0,
+          free_issue: 0
+        });
+      }  
+      const summary = summaryMap.get(brand);
+      summary.free_issue += cost;  // 累加费用发放
+    }
   });
 
   // 更新统计卡片
   totalQuantityEl.textContent = formatNumber(totalQuantity);
   totalAmountEl.textContent = `¥${formatNumber(totalAmount)}`;
-  totalBrandsEl.textContent = formatNumber(uniqueBrands.size);
-  totalProductsEl.textContent = formatNumber(uniqueProducts.size);
   
-  // 隆桥仓库显示利润
+  const statLabels = document.querySelectorAll('.stat-card .stat-label');
   if (currentWarehouse === 'longqiao') {
+    totalBrandsEl.textContent = `¥${formatNumber(freeIssueAmount)}`;
+    totalBrandsEl.style.color = '#e53e3e';
+    statLabels[3].textContent = '费用发放';
     document.getElementById('totalProfit').textContent = `¥${formatNumber(totalProfit)}`;
+  } else {
+    totalBrandsEl.textContent = formatNumber(uniqueBrands.size);
+    totalBrandsEl.style.color = '';
+    statLabels[3].textContent = '品牌数量';
   }
   
-  // 按品牌汇总
-  const summaryMap = new Map();
-  data.forEach(record => {
-      const brand = record.brand || '未知品牌';
-      
-      if (!summaryMap.has(brand)) {
-          summaryMap.set(brand, {
-              brand: brand,
-              total_quantity: 0,
-              total_amount: 0,
-              total_cost: 0,   // 新增
-              profit: 0        // 新增
-          });
-      }
-      
-      const summary = summaryMap.get(brand);
-      summary.total_quantity += (record.quantity || 0);
-      
-      if (currentWarehouse === 'longqiao') {
-          const cost = record.cost || 0;
-          const amount = record.amount || 0;
-          summary.total_amount += amount;
-          summary.total_cost += cost;
-          summary.profit += (amount - cost);
-      } else {
-          summary.total_amount += (record.quantity || 0) * (record.unit_price || 0);
-      }
-  });
+  totalProductsEl.textContent = formatNumber(uniqueProducts.size);
   
   // 按销售额从大到小排序
   const sortedSummaries = Array.from(summaryMap.values()).sort((a, b) => 
@@ -1063,8 +1098,8 @@ function calculateSummary(data) {
             : '';
         
         rowHTML += `
-            <td>¥${formatNumber(summary.total_cost)}</td>
-            <td ${profitStyle}>¥${formatNumber(summary.profit)}</td>
+            <td ${profitStyle}>¥${formatNumber(summary.profit)}</td> 
+            <td>¥${formatNumber(summary.free_issue)}</td> 
         `;
     }
     
