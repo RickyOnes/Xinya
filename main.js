@@ -4,7 +4,7 @@ const SUPABASE_URL = 'https://iglmqwpagzjadwauvchh.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlnbG1xd3BhZ3pqYWR3YXV2Y2hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4ODk4NDAsImV4cCI6MjA2NjQ2NTg0MH0.Mtiwp31mJvbLRTotbrb4_DobjjpM4kg9f4-G8oWz85E';
 
 let supabaseClient;
-
+  console.time('init');
 try {
   supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   console.log('Supabase客户端初始化成功');
@@ -634,7 +634,7 @@ async function fetchRecords(tableName, fields, conditions = {}) {
   }
 
   try {
-    const batchSize = 1000; // 每批次获取的记录数
+    const batchSize = 10000; // 每批次获取的记录数
     let allData = []; // 存储所有数据
     let from = 0; // 起始位置
     let hasMore = true; // 是否还有更多数据
@@ -685,11 +685,12 @@ async function fetchRecords(tableName, fields, conditions = {}) {
 
 // 加载筛选选项
 async function loadFilterOptions() {
+  console.time('loadFilterOptions');
   if (!supabaseClient) {
     showRoundedAlert('错误: Supabase客户端未初始化', 'error');
     return;
   }
-  
+
   try {
     // 获取当前日期范围
     const startDate = startDateEl.value;
@@ -705,10 +706,10 @@ async function loadFilterOptions() {
     const conditions = {
       sale_date: { gte: startDate, lte: endDate }
     };
-    
+    console.time('filter-query');
     // 使用通用函数获取数据
     const salesRecords = await fetchRecords(table, fields, conditions);
-    
+    console.timeEnd('filter-query');
     // 处理仓库数据
     let warehouses = [];
     if (salesRecords.length > 0) {
@@ -768,7 +769,7 @@ async function loadFilterOptions() {
     productMultiSelect.setOptions(
       allProductsData.map(p => ({ value: p.product_id, label: p.product_name }))
     );
-    
+    console.timeEnd('loadFilterOptions');
     return Promise.resolve();
   } catch (error) {
     showRoundedAlert('筛选选项加载失败: ' + error.message, 'error');
@@ -778,6 +779,7 @@ async function loadFilterOptions() {
 
 // 加载数据
 async function loadData() {
+  console.time('loadData');
   // 检查用户是否登录
   if (!user) {
     showRoundedAlert('请先登录系统', 'warning');
@@ -836,12 +838,12 @@ async function loadData() {
     if (productMultiSelect.selectedValues.length > 0) {
       conditions.product_id = productMultiSelect.selectedValues;
     }
-
+console.time('data- query');
     // 使用通用函数获取数据
     const data = await fetchRecords(table, fields, conditions);
-
-    renderDetailTable(data);
+console.timeEnd('data- query');
     calculateSummary(data);
+    renderDetailTable(data);    
 
   } catch (error) {
     console.error('查询错误详情:', error);
@@ -856,10 +858,12 @@ async function loadData() {
     // 隐藏加载动画
     loadingEl.style.display = 'none';
     hideLoadingOverlay(); // 移除遮罩层
+    console.timeEnd('loadData');
   }
 }
 // 渲染详细表格
 function renderDetailTable(data) {
+      console.time('renderDetailTable');
   const tbody = detailTable;
   tbody.innerHTML = '';
 
@@ -925,10 +929,12 @@ function renderDetailTable(data) {
     
     tbody.appendChild(row);
   });
+        console.timeEnd('renderDetailTable');
 }
 
 // 计算汇总数据
 function calculateSummary(data) {
+  console.time('calculateSummary');
   const summaryTableEl = document.getElementById('summaryTable');
   let thead = summaryTableEl.querySelector('thead');
   if (!thead) {
@@ -1105,7 +1111,7 @@ function calculateSummary(data) {
     
     row.innerHTML = rowHTML;
     tbody.appendChild(row);
-});
+  });
   
   // 渲染饼图
   if (data && data.length > 0) {
@@ -1117,6 +1123,7 @@ function calculateSummary(data) {
   setTimeout(() => {
     syncContainersDimensions();
   }, 0);  
+  console.timeEnd('calculateSummary');
 }
 
 // 同步容器尺寸函数
@@ -1401,7 +1408,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   loadingEl.style.display = 'none'; // 隐藏加载动画
   // 添加切换仓库按钮事件监听
   document.getElementById('switchWarehouseBtn').addEventListener('click', switchWarehouse);
-  
+    
+  // 如果用户已登录，初始化应用
+  if (isAuthenticated) {
+    initializeApp();
+    return; // 关键优化点：直接返回避免后续认证逻辑
+  }
+
   // 认证标签切换
   authTabs.forEach(tab => {
     tab.addEventListener('click', () => {
@@ -1523,31 +1536,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     showRoundedAlert('密码重置邮件已发送，请检查您的邮箱', 'success'); // 替换alert
   });
-  
-  // 如果用户已登录，初始化应用
-  if (isAuthenticated) {
-    initializeApp();
-    updateDetailTableHeader(); // 新增：初始化表头
-  }
 }); 
 
 
 // ============== 修改后的应用初始化函数 ==============
 function initializeApp() {
-
-  // 检查 Supabase 是否初始化成功
-  if (!supabaseClient) {
-    console.error('Supabase 客户端未正确初始化');
-    loadingEl.innerHTML = `
-      <div style="text-align: center; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-        <div style="color: #e53e3e; font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
-        <p style="font-size: 1.2rem; margin-bottom: 0.5rem;">系统初始化失败</p>
-        <p>Supabase 客户端未正确初始化，请刷新页面或联系管理员</p>
-      </div>
-    `;
-    loadingEl.style.display = 'block';
-    return;
-  } 
 
   // 设置默认日期：当月1号到今天
   setDefaultDates();
@@ -1642,4 +1635,5 @@ function initializeApp() {
       }
     }
   });
+  console.timeEnd('init');
 }
