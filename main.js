@@ -4,7 +4,7 @@ const SUPABASE_URL = 'https://iglmqwpagzjadwauvchh.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlnbG1xd3BhZ3pqYWR3YXV2Y2hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4ODk4NDAsImV4cCI6MjA2NjQ2NTg0MH0.Mtiwp31mJvbLRTotbrb4_DobjjpM4kg9f4-G8oWz85E';
 
 let supabaseClient;
-  console.time('init');
+  console.time('start');
 try {
   supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   console.log('Supabase客户端初始化成功');
@@ -158,6 +158,14 @@ function showRoundedAlert(message, type = 'error') {
 
 // **** 仓库切换功能 ****
 function switchWarehouse() {
+  // +++ 新增：收起详细记录区域 +++
+  if (detailSection.classList.contains('visible')) {
+    detailSection.classList.remove('visible');
+    // 更新图标方向
+    const icon = document.querySelector('#toggleDetails i');
+    icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+  }
+  
   // 切换仓库状态
   currentWarehouse = currentWarehouse === 'default' ? 'longqiao' : 'default';
   
@@ -740,7 +748,6 @@ async function fetchRecords(tableName, fields, conditions = {}) {
 
 // **** 加载筛选选项函数 ****
 async function loadFilterOptions() {
-  console.time('loadFilterOptions');
   if (!supabaseClient) {
     showRoundedAlert('错误: Supabase客户端未初始化', 'error');
     return;
@@ -835,7 +842,6 @@ async function loadFilterOptions() {
     productMultiSelect.setOptions(
       allProductsData.map(p => ({ value: p.product_id, label: p.product_name }))
     );
-    console.timeEnd('loadFilterOptions');
     return Promise.resolve();
   } catch (error) {
     showRoundedAlert('筛选选项加载失败: ' + error.message, 'error');
@@ -849,6 +855,14 @@ async function loadFilterOptions() {
 
 // 加载数据
 function loadData() {
+  // +++ 新增：收起详细记录区域 +++
+  if (detailSection.classList.contains('visible')) {
+    detailSection.classList.remove('visible');
+    // 更新图标方向
+    const icon = document.querySelector('#toggleDetails i');
+    icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+  }
+  
   // 显示悬浮加载动画
   loadingEl.style.display = 'block';
   showLoadingOverlay(); // 添加遮罩层
@@ -900,7 +914,8 @@ function loadData() {
     }
 
     calculateSummary(data);
-    renderDetailTable(data);    
+    // 更新详细记录条数但不渲染表格
+    renderDetailTable(data, false);    
 
   } catch (error) {
     console.error('查询错误详情:', error);
@@ -917,9 +932,25 @@ function loadData() {
     hideLoadingOverlay(); // 移除遮罩层
   }
 }
+
 // 渲染详细表格
-function renderDetailTable(data) {
-      console.time('renderDetailTable');
+function renderDetailTable(data, shouldRender = false) {
+  // 获取显示数据条数的元素
+  const detailCountEl = document.getElementById('detailCount');
+  
+  // 始终更新数据条数显示，无论是否渲染表格
+  if (!data || data.length === 0) {
+    detailCountEl.textContent = '(0条数据)';
+  } else {
+    detailCountEl.textContent = `(${data.length}条)`;
+  }
+  
+  // 如果不需要渲染，直接返回
+  if (!shouldRender) {
+    return;
+  }
+  
+  console.time('renderDetailTable');
   const tbody = detailTable;
   tbody.innerHTML = '';
 
@@ -930,12 +961,7 @@ function renderDetailTable(data) {
     });
   }
 
-  // 获取显示数据条数的元素
-  const detailCountEl = document.getElementById('detailCount');
-  
   if (!data || data.length === 0) {
-    // 更新数据条数显示
-    detailCountEl.textContent = '(0条数据)';
     tbody.innerHTML = `
       <tr>
         <td colspan="${currentWarehouse === 'longqiao' ? 9 : 8}" style="text-align: center; padding: 30px; color: #6c757d;">
@@ -946,9 +972,6 @@ function renderDetailTable(data) {
     `;
     return;
   }
-  
-  // 更新数据条数显示
-  detailCountEl.textContent = `(${data.length}条)`;
 
   data.forEach(record => {
     const row = document.createElement('tr');
@@ -989,12 +1012,74 @@ function renderDetailTable(data) {
     
     tbody.appendChild(row);
   });
-        console.timeEnd('renderDetailTable');
+  console.timeEnd('renderDetailTable');
 }
 
-// 计算汇总数据
+// 获取当前筛选后的数据
+function getFilteredData() {
+  // 重新获取当前筛选后的数据
+  let data = salesRecords;
+  
+  // 应用相同的筛选逻辑
+  if (currentWarehouse === 'longqiao') {
+    if (warehouseMultiSelect.selectedValues.length > 0) {
+      data = data.filter(record => 
+        warehouseMultiSelect.selectedValues.includes(record.sales)
+      );
+    }
+  } else {
+    if (warehouseMultiSelect.selectedValues.length > 0) {
+      data = data.filter(record => 
+        warehouseMultiSelect.selectedValues.includes(record.warehouse)
+      );
+    }
+  }
+  
+  if (brandMultiSelect.selectedValues.length > 0) {
+    data = data.filter(record => 
+      brandMultiSelect.selectedValues.includes(record.brand)
+    );
+  }
+  
+  if (productMultiSelect.selectedValues.length > 0) {
+    data = data.filter(record => 
+      productMultiSelect.selectedValues.includes(record.product_id)
+    );
+  }
+  
+  if (currentWarehouse === 'longqiao' && 
+      customerMultiSelect && 
+      customerMultiSelect.selectedValues.length > 0) {
+    data = data.filter(record => 
+      customerMultiSelect.selectedValues.includes(record.customer)
+    );
+  }
+  
+  return data;
+}
+
+// 显示详细记录表格
+function showDetailTable() {
+  // 显示悬浮加载动画
+  loadingEl.style.display = 'block';
+  showLoadingOverlay(); // 添加遮罩层
+
+  // 只有当详细记录区域可见时才渲染表格
+  if (detailSection.classList.contains('visible')) {
+    // 获取筛选后的数据
+    const data = getFilteredData();
+    
+    // 渲染表格
+    renderDetailTable(data, true);
+  }
+  
+  // 隐藏加载动画
+  loadingEl.style.display = 'none';
+  hideLoadingOverlay(); // 移除遮罩层
+}
+
+// **** 计算汇总数据 ****
 function calculateSummary(data) {
-  console.time('calculateSummary');
   const summaryTableEl = document.getElementById('summaryTable');
   let thead = summaryTableEl.querySelector('thead');
   if (!thead) {
@@ -1184,7 +1269,6 @@ function calculateSummary(data) {
   setTimeout(() => {
     syncContainersDimensions();
   }, 0);  
-  console.timeEnd('calculateSummary');
 }
 
 // 同步容器尺寸函数
@@ -1405,6 +1489,8 @@ function toggleDetailSection() {
   const icon = document.querySelector('#toggleDetails i');
   if (detailSection.classList.contains('visible')) {
     icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+    // +++ 新增：显示时渲染表格 +++
+    showDetailTable();
   } else {
     icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
   }
@@ -1626,6 +1712,7 @@ function initializeApp() {
       
       // 加载初始数据
       loadData();
+      console.timeEnd('start');
     })
     .catch(error => {
       console.error('初始化失败:', error);
@@ -1720,5 +1807,4 @@ function initializeApp() {
       }
     }
   });
-  console.timeEnd('init');
 }
