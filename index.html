@@ -117,7 +117,11 @@
       gap: 15px; 
       margin-bottom: 1.5rem; 
     }
-    
+    /* 新增隆桥仓库专属样式 */
+    .filters-row.longqiao {
+        grid-template-columns: 150px 150px 150px 150px 250px 1fr;
+    }    
+
     .filter-group { 
       display: inline-flex;       /* 改为 inline-flex 才能生效 flex-direction */
       flex-direction: column; 
@@ -764,8 +768,34 @@
         grid-column: 1 / 2;
       }
       .filter-group:nth-child(5) {
-        grid-column: 2/ 4;
+        grid-column: 2 / 4;
       }
+
+      /* 隆桥仓库样式 */
+      .filters-row.longqiao {
+          grid-template-columns: 180px 180px 1fr 1fr;
+          grid-template-rows: auto auto;
+      }
+      .filters-row.longqiao .filter-group:nth-child(1),
+      .filters-row.longqiao .filter-group:nth-child(2),
+      .filters-row.longqiao .filter-group:nth-child(3),
+      .filters-row.longqiao .filter-group:nth-child(4) {
+          grid-row: 1;
+      }
+      .filters-row.longqiao .filter-group:nth-child(4){
+        grid-column: 4;
+      }
+      .filters-row.longqiao .filter-group:nth-child(3){
+        grid-column: 3;
+      }
+      .filters-row.longqiao .filter-group:nth-child(5) {
+          grid-column: 1/3;
+          grid-row: 2;
+      }
+      .filters-row.longqiao .filter-group:nth-child(6) {
+          grid-column: 3/5;
+          grid-row: 2;
+      }      
     }     
 
     @media (max-width: 992px) {
@@ -862,9 +892,40 @@
 
       /* 第3行：条件5（独占一行） */
       .filter-group:nth-child(5) {
-        grid-column: 1 / 3; /* 横跨两列 */
+        grid-column: 2 / 4; /* 横跨两列 */
         grid-row: 3;
       }
+      /* 隆桥仓库样式 */
+      .filters-row.longqiao {
+          grid-template-columns: 1fr 1fr; /* 改为2列 */
+          grid-template-rows: auto auto auto; /* 改为3行 */
+      }
+      
+      /* 重新排列filter-group */
+      .filters-row.longqiao .filter-group:nth-child(1) {
+          grid-row: 1;
+          grid-column: 1;
+      }
+      .filters-row.longqiao .filter-group:nth-child(2) {
+          grid-row: 1;
+          grid-column: 2;
+      }
+      .filters-row.longqiao .filter-group:nth-child(3) {
+          grid-row: 2;
+          grid-column: 1;
+      }
+      .filters-row.longqiao .filter-group:nth-child(4) {
+          grid-row: 2;
+          grid-column: 2;
+      }
+      .filters-row.longqiao .filter-group:nth-child(5) {
+          grid-row: 3;
+          grid-column: 1;
+      }
+      .filters-row.longqiao .filter-group:nth-child(6) {
+          grid-row: 3;
+          grid-column: 2;
+      }    
       
       header { 
         padding: 1.5rem; 
@@ -1239,7 +1300,26 @@
                 </div>
               </div>
             </div>
-            
+
+            <div class="filter-group" id="customerFilterGroup" style="display: none;">
+              <label><i class="fas fa-user-friends"></i> 客户</label>
+              <div class="custom-multiselect" id="customerMultiselect">
+                <div class="select-box" id="customerSelector">
+                  <div class="placeholder">全部客户</div>
+                  <div class="selected-display"></div> <!-- 新增：用于显示选中项 -->
+                  <i class="fas fa-chevron-down arrow"></i>
+                  <i class="fas fa-times-circle clear-btn"></i> <!-- 新增：清除按钮 -->
+                </div>
+                <div class="options-container" id="customerOptions">
+                  <div class="option" id="customerSelectAll">
+                    <input type="checkbox" id="selectAllCustomer">
+                    <label for="selectAllCustomer">全选</label>
+                  </div>
+                  <!-- 品牌选项将通过JS动态添加 -->
+                </div>
+              </div>
+            </div>       
+
             <div class="filter-group">
               <label><i class="fas fa-box"></i> 商品</label>
               <div class="custom-multiselect" id="productMultiselect">
