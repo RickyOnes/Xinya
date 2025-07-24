@@ -7,7 +7,7 @@ let supabaseClient;
   console.time('start');
 try {
   supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  console.log('Supabase客户端初始化成功');
+  if(supabaseClient) console.log('Supabase客户端初始化成功');
 } catch (error) {
   console.error('Supabase初始化失败:', error);
   showRoundedAlert('系统初始化失败，请刷新页面或联系管理员', 'error'); // 替换alert
@@ -738,7 +738,6 @@ async function fetchRecords(tableName, fields, conditions = {}) {
       hasMore = data.length === batchSize;
       from += batchSize;
     }
-    console.log(`Total records: ${allData.length}`);
     return allData;
   } catch (error) {
     console.error(`从 ${tableName} 获取数据失败:`, error);
@@ -862,17 +861,14 @@ function loadData() {
     const icon = document.querySelector('#toggleDetails i');
     icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
   }
-  
-  // 显示悬浮加载动画
-  loadingEl.style.display = 'block';
-  showLoadingOverlay(); // 添加遮罩层
 
   // 清除表格和饼图内容
   summaryTable.innerHTML = '';
   detailTable.innerHTML = '';
   clearPieChart(); 
 
-  try {
+  try { 
+
     // 直接使用全局 salesRecords 数据
     let data = salesRecords; 
     // 仓库/销售人员过滤
@@ -926,10 +922,6 @@ function loadData() {
         <p>${error.message}</p>
       </div>
     `;
-  } finally {
-    // 隐藏加载动画
-    loadingEl.style.display = 'none';
-    hideLoadingOverlay(); // 移除遮罩层
   }
 }
 
@@ -950,69 +942,84 @@ function renderDetailTable(data, shouldRender = false) {
     return;
   }
   
-  console.time('renderDetailTable');
-  const tbody = detailTable;
-  tbody.innerHTML = '';
+  // 使用 setTimeout 将渲染操作放到下一个事件循环中，确保加载动画能够显示
+  setTimeout(() => {
+    try {
+      console.time('renderDetailTable');
+      const tbody = detailTable;
+      tbody.innerHTML = '';
 
-  // 修改点：按时间从大到小排序
-  if (data && data.length > 0) {
-    data.sort((a, b) => {
-      return new Date(b.sale_date) - new Date(a.sale_date);
-    });
-  }
+      // 修改点：按时间从大到小排序
+      if (data && data.length > 0) {
+        data.sort((a, b) => {
+          return new Date(b.sale_date) - new Date(a.sale_date);
+        });
+      }
 
-  if (!data || data.length === 0) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="${currentWarehouse === 'longqiao' ? 9 : 8}" style="text-align: center; padding: 30px; color: #6c757d;">
-          <i class="fas fa-database" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
-          未找到匹配的记录
-        </td>
-      </tr>
-    `;
-    return;
-  }
+      if (!data || data.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="${currentWarehouse === 'longqiao' ? 9 : 8}" style="text-align: center; padding: 30px; color: #6c757d;">
+              <i class="fas fa-database" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+              未找到匹配的记录
+            </td>
+          </tr>
+        `;
+        return;
+      }
 
-  data.forEach(record => {
-    const row = document.createElement('tr');
-    let amount, warehouseField,cost;
-    
-    if (currentWarehouse === 'longqiao') {
-      amount = record.amount || 0;
-      warehouseField = record.sales || '--';
-      cost = record.cost || 0;
-    } else {
-      amount = (record.quantity || 0) * (record.unit_price || 0);
-      warehouseField = record.warehouse || '--';
-      cost = record.unit_price || 0;
+      data.forEach(record => {
+        const row = document.createElement('tr');
+        let amount, warehouseField, cost;
+        
+        if (currentWarehouse === 'longqiao') {
+          amount = record.amount || 0;
+          warehouseField = record.sales || '--';
+          cost = record.cost || 0;
+        } else {
+          amount = (record.quantity || 0) * (record.unit_price || 0);
+          warehouseField = record.warehouse || '--';
+          cost = record.unit_price || 0;
+        }
+        
+        // 基础行
+        row.innerHTML = `
+          <td>${record.sale_date || '--'}</td>
+          <td>${ //第二列显示商品ID或客户名称
+            currentWarehouse === 'longqiao' 
+              ? (record.customer || '--')  // 隆桥仓库显示客户名称
+              : (record.product_id || '--') // 其他仓库显示商品ID
+          }</td>
+          <td>${record.product_name || '--'}</td>
+          <td>${record.brand || '--'}</td>
+          <td>${warehouseField}</td>
+          <td>${formatNumber(record.quantity || 0)}</td>
+          <td>${cost}</td>
+          <td>¥${formatNumber(amount)}</td>
+        `;
+        
+        // 隆桥仓库显示利润列
+        if (currentWarehouse === 'longqiao') {
+          const profit = (record.amount || 0) - (record.cost || 0);
+          const profitStyle = profit < 0 ? 'style="color: #e53e3e; font-weight: bold;"' : '';
+          row.innerHTML += `<td ${profitStyle}>¥${formatNumber(profit)}</td>`;
+        }
+        
+        tbody.appendChild(row);
+      });
+      console.timeEnd('renderDetailTable');
+    } catch (error) {
+      console.error('渲染详细表格时出错:', error);
+      detailTable.innerHTML = `
+        <tr>
+          <td colspan="${currentWarehouse === 'longqiao' ? 9 : 8}" style="text-align: center; padding: 30px; color: #e53e3e;">
+            <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+            <p>渲染表格时发生错误</p>
+          </td>
+        </tr>
+      `;
     }
-    
-    // 基础行
-    row.innerHTML = `
-      <td>${record.sale_date || '--'}</td>
-      <td>${ //第二列显示商品ID或客户名称
-        currentWarehouse === 'longqiao' 
-          ? (record.customer || '--')  // 隆桥仓库显示客户名称
-          : (record.product_id || '--') // 其他仓库显示商品ID
-      }</td>
-      <td>${record.product_name || '--'}</td>
-      <td>${record.brand || '--'}</td>
-      <td>${warehouseField}</td>
-      <td>${formatNumber(record.quantity || 0)}</td>
-       <td>${cost}</td>
-      <td>¥${formatNumber(amount)}</td>
-    `;
-    
-    // 隆桥仓库显示利润列
-    if (currentWarehouse === 'longqiao') {
-      const profit = (record.amount || 0) - (record.cost || 0);
-      const profitStyle = profit < 0 ? 'style="color: #e53e3e; font-weight: bold;"' : '';
-      row.innerHTML += `<td ${profitStyle}>¥${formatNumber(profit)}</td>`;
-    }
-    
-    tbody.appendChild(row);
-  });
-  console.timeEnd('renderDetailTable');
+  }, 0);
 }
 
 // 获取当前筛选后的数据
@@ -1059,10 +1066,13 @@ function getFilteredData() {
 }
 
 // 显示详细记录表格
+// 显示详细记录表格
 function showDetailTable() {
   // 显示悬浮加载动画
-  loadingEl.style.display = 'block';
-  showLoadingOverlay(); // 添加遮罩层
+  if (loadingEl) {
+    loadingEl.style.display = 'block';
+    showLoadingOverlay(); // 添加遮罩层
+  }
 
   // 只有当详细记录区域可见时才渲染表格
   if (detailSection.classList.contains('visible')) {
@@ -1071,11 +1081,21 @@ function showDetailTable() {
     
     // 渲染表格
     renderDetailTable(data, true);
+    
+    // 在渲染完成后隐藏加载动画
+    setTimeout(() => {
+      if (loadingEl) {
+        loadingEl.style.display = 'none';
+        hideLoadingOverlay(); // 移除遮罩层
+      }
+    }, 300);
+  } else {
+    // 如果详细记录区域不显示，直接隐藏加载动画
+    if (loadingEl) {
+      loadingEl.style.display = 'none';
+      hideLoadingOverlay(); // 移除遮罩层
+    }
   }
-  
-  // 隐藏加载动画
-  loadingEl.style.display = 'none';
-  hideLoadingOverlay(); // 移除遮罩层
 }
 
 // **** 计算汇总数据 ****
@@ -1493,6 +1513,10 @@ function toggleDetailSection() {
     showDetailTable();
   } else {
     icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+    // 隐藏时清除表格内容
+    if (detailTable) {
+      detailTable.innerHTML = '';
+    }
   }
 }
 
@@ -1543,11 +1567,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
   
-  console.log('DOM已加载，开始初始化页面');
-
-   // 初始化认证状态
+  // 初始化认证状态
   const isAuthenticated = await initAuth();
-  loadingEl.style.display = 'none'; // 隐藏加载动画
   // 添加切换仓库按钮事件监听
   document.getElementById('switchWarehouseBtn').addEventListener('click', switchWarehouse);
     

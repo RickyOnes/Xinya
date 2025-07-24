@@ -848,7 +848,29 @@
         top: 0; /* 固定在顶部 */
         z-index: 10; /* 确保表头在内容之上 */
         background-color: #f1f5fd; /* 与原有表头背景色保持一致 */
-      }       
+      } 
+
+      /* ==以下为小屏【下拦框】样式 ==*/
+      /* 下拉菜单容器 */
+      .options-container {
+        overflow-x: auto;  /* 允许水平滚动 */
+        -webkit-overflow-scrolling: touch; /* 优化移动端滚动体验 */          
+        width: 100%;
+      }
+
+      .option {
+        padding: 8px 16px;
+        align-items: center;  /*垂直居中 */
+        justify-content: flex-start;  /* 整体靠左对齐 */
+        width: max-content; /* 允许表格根据内容扩展 */
+        white-space: nowrap; /* 禁止文字换行 */
+        font-size: 0.85em; /* 减小字体大小 */
+        table-layout: auto; /* 允许列宽自适应内容 */
+      
+        label {
+          white-space: nowrap; /* 禁止文字换行 */
+        }
+      }            
     }
     
     @media (max-width: 768px) {
@@ -978,28 +1000,6 @@
         
         .selected-display {
           max-height: 80px; /* 移动端允许更多空间 */
-        }
-      }
-    
-      /* 以下为小屏【下拦框】样式 */
-      /* 下拉菜单容器 */
-      .options-container {
-        overflow-x: auto;  /* 允许水平滚动 */
-        -webkit-overflow-scrolling: touch; /* 优化移动端滚动体验 */          
-        width: 100%;
-      }
-
-      .option {
-        padding: 8px 16px;
-        /*align-items: flex-start;  /* 子元素顶部对齐（更紧凑） */
-        justify-content: flex-start;  /* 整体靠左对齐 */
-        width: max-content; /* 允许表格根据内容扩展 */
-        white-space: nowrap; /* 禁止文字换行 */
-        font-size: 0.85em; /* 减小字体大小 */
-        table-layout: auto; /* 允许列宽自适应内容 */
-      
-        label {
-          white-space: nowrap; /* 禁止文字换行 */
         }
       }
     
