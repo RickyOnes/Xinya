@@ -766,7 +766,7 @@ async function loadFilterOptions() {
     // 设置查询字段（所有）
     const fields = currentWarehouse === 'longqiao'
       ? ['sale_date', 'product_id', 'product_name', 'sales', 'quantity', 'customer', 'amount', 'cost', 'brand']
-      : ['sale_date', 'product_id', 'product_name', 'warehouse', 'quantity', 'unit_price', 'brand'];
+      : ['sale_date', 'product_id', 'product_name', 'warehouse', 'quantity', 'unit_price', 'brand', 'pieces'];
 
     // 构建查询条件（只查询当前日期范围内的记录）
     const conditions = {
@@ -1066,7 +1066,6 @@ function getFilteredData() {
 }
 
 // 显示详细记录表格
-// 显示详细记录表格
 function showDetailTable() {
   // 显示悬浮加载动画
   if (loadingEl) {
@@ -1108,7 +1107,7 @@ function calculateSummary(data) {
   }
 
   // 根据仓库类型设置表头
-  let headerHTML = `<tr><th>品牌</th><th>总销量</th><th>总金额</th>`;
+  let headerHTML = `<tr><th>品牌</th><th>总件数</th><th>总金额</th>`;
   if (currentWarehouse === 'longqiao') {
       headerHTML += `<th>总毛利</th><th>费用发放</th>`;
   }
@@ -1175,10 +1174,11 @@ function calculateSummary(data) {
         totalProfit += amount - cost;
       }
     } else { // 多多仓库
+      const pieces = record.pieces || 0; // 使用pieces字段
       const quantity = record.quantity || 0;
       const unitPrice = record.unit_price || 0;
       amount = quantity * unitPrice;
-      totalQuantity += quantity;
+      totalQuantity += pieces; // 累加pieces而非quantity
       totalAmount += amount;
       cost = unitPrice;
     }
@@ -1205,7 +1205,7 @@ function calculateSummary(data) {
         summary.total_cost += cost;
         summary.profit += amount - cost;
       } else {
-        summary.total_quantity += record.quantity || 0;
+        summary.total_quantity += record.pieces || 0; // 使用pieces字段
         summary.total_amount += amount;
       }
     }
