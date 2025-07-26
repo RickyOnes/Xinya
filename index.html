@@ -801,7 +801,18 @@
     @media (max-width: 992px) {
       .stat-value {
       font-size: 1.8rem;      
-      }        
+      }      
+
+      /* 统计卡片 */
+      .summary-stats { 
+        gap: 1rem;
+        margin-bottom: 1.8rem; 
+      }
+      /* 修改包含总金额的卡片内边距 */
+      .stat-card:has(#totalAmount) {
+        padding-left: 0.1rem !important;
+        padding-right: 0.1rem !important;
+      }      
       .summary-content {
         gap: 1rem; /* 缩小间距 */
         overflow-x: auto; /* 允许横向滚动 */
