@@ -868,7 +868,11 @@
         label {
           white-space: nowrap; /* 禁止文字换行 */
         }
-      }            
+      }  
+      
+      .user-status {
+        right: 10px !important; /* 距离右侧10px */
+      }      
     }
     
     @media (max-width: 768px) {
@@ -1056,11 +1060,11 @@
       .user-status {
         margin-left: 0;
         margin-top: 10px;
-        right: 12px !important; /* 距离右侧15px */
+        right: 1px !important; /* 距离右侧8px */
       }
 
       .user-info {
-        padding: 6px 10px;
+        padding: 6px 10px !important; 
       }
 
       .user-info i.fa-user-circle {
@@ -1126,11 +1130,11 @@
       .user-status {
         position: fixed;
         bottom: 12px;
-        right: 5px !important;
+        right: -10px !important;
       }
 
       .user-info {
-        padding: 5px 8px;
+        padding: 5px 8px !important;
       }
 
       .user-info i.fa-user-circle {
@@ -1373,11 +1377,11 @@
     <!-- 主应用容器 -->
     <div id="appContainer" style="display: none;">        
       <!-- 添加用户状态标签 -->
-      <header style="display: flex; align-items: left; position: relative; min-height: 120px; padding: 15px;">
+      <header style="display: flex; align-items: left; position: relative; min-height: 130px; padding: 10px 20px 15px 20px;">
         <h1><img src="icon64.png" alt="应用图标" style="border-radius: 8px; filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.5));">多多买菜销售数据查询系统</h1>
         <div class="user-status" id="userStatus" style="position: relative; bottom: auto; margin-left: auto;">
           <div class="user-dropdown" style="position: absolute; right: 0; bottom: -10px;">
-            <div class="user-info" id="userInfo" style="display: flex; align-items: center; cursor: pointer; background: rgba(255, 255, 255, 0.2); padding: 8px 12px; border-radius: 20px;">
+            <div class="user-info" id="userInfo" style="display: flex; align-items: center; cursor: pointer; background: rgba(255, 255, 255, 0.2);">
               <i class="fas fa-user-circle" style="font-size: 24px; margin-right: 8px; color: white;"></i>
               <span id="userName" style="color: white; font-weight: 500;"></span>
               <i class="fas fa-chevron-down" style="margin-left: 8px; font-size: 13px; color: white;"></i>
