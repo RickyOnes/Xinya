@@ -37,6 +37,7 @@
       background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
       padding: 15px; 
       min-height: 100vh; 
+      overflow-x: hidden; /* 防止水平滚动 */
     }
     
     .container { 
@@ -52,7 +53,6 @@
       margin-bottom: 1.2rem; 
       box-shadow: 0 6px 15px rgba(67, 97, 238, 0.3);
       position: relative;
-      /*overflow: visible; /* 确保内容可以超出 header */
     }
     
     header::before {
@@ -1386,8 +1386,8 @@
     
     <!-- 主应用容器 -->
     <div id="appContainer" style="display: none;">        
-      <!-- 在 index.html 中，修改 header 部分，添加用户状态标签 -->
-      <header style="display: flex; justify-content: space-between; align-items: left; position: relative; min-height: 120px; padding: 15px;">
+      <!-- 添加用户状态标签 -->
+      <header style="display: flex; align-items: left; position: relative; min-height: 120px; padding: 15px;">
         <h1><img src="icon64.png" alt="应用图标" style="border-radius: 8px; filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.5));">多多买菜销售数据查询系统</h1>
         <div class="user-status" id="userStatus" style="position: relative; bottom: auto; margin-left: auto;">
           <div class="user-dropdown" style="position: absolute; right: 0; bottom: -12px;">
