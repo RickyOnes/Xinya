@@ -55,6 +55,13 @@ const registerBtn = document.getElementById('registerBtn');
 const forgotPasswordLink = document.getElementById('forgotPasswordLink');
 const authTabs = document.querySelectorAll('.auth-tab');
 
+// 添加用户状态相关的DOM引用
+const userStatus = document.getElementById('userStatus');
+const userInfo = document.getElementById('userInfo');
+const userName = document.getElementById('userName');
+const userMenu = document.getElementById('userMenu');
+const logoutBtn = document.getElementById('logoutBtn');
+
 // ============== 3. 全局状态 ==============
 let allWarehouses = [];
 let allBrands = [];
@@ -95,9 +102,8 @@ function setDefaultDates() {
   startDateEl.value = formatDate(startDate);
 }
 
-// **** 认证函数 ****
+// **** 认证函数，用户状态显示****
 async function initAuth() {
-
   if (!supabaseClient) {
     return false;
   }
@@ -107,18 +113,36 @@ async function initAuth() {
 
     if (currentUser) {
       user = currentUser;
+      // 显示用户状态 - 根据邮箱前缀映射到用户名
+      const emailPrefix = currentUser.email.split('@')[0]; // 获取邮箱前缀
+      const usernameMap = {
+        '162004332': '系统管理员',
+        'rickyone': '数据管理员',
+        '13762405681': '王英',
+        'ksf2025': '康师傅',
+        'pepsi_cola': '百事可乐',
+        'coca_cola': '可口可乐',
+        '15096086678': '娟子'
+      };
+      // 如果邮箱前缀在映射表中，则使用映射的用户名，否则使用邮箱前缀
+      const displayName = usernameMap[emailPrefix] || emailPrefix;
+      userName.textContent = displayName;
+
+      userStatus.style.display = 'block';
       authContainer.style.display = 'none';
       appContainer.style.display = 'block';
       return true;
     } else {
+      userStatus.style.display = 'none';
       authContainer.style.display = 'block';
       return false;
     }
   } catch (error) {
-    console.error('initAuth 发生错误:', error);
+    console.error('用户认证发生错误:', error);
     return false;
   }
 }
+
 // **** 弹窗提示函数 ****
 function showRoundedAlert(message, type = 'error') {
   // 移除已有的提示容器
@@ -243,7 +267,6 @@ function updateDetailTableHeader() {
   
   thead.innerHTML = headerHTML;
 }
-
 
 // ============== 5. 下拉框管理 （类+全局事件） ==============
 class MultiSelect {
@@ -745,7 +768,7 @@ async function fetchRecords(tableName, fields, conditions = {}) {
   }
 }
 
-// **** 加载筛选选项函数 ****
+// 加载筛选选项函数，在加载完成后检查品牌数量并自动应用单品牌逻辑
 async function loadFilterOptions() {
   if (!supabaseClient) {
     showRoundedAlert('错误: Supabase客户端未初始化', 'error');
@@ -841,6 +864,15 @@ async function loadFilterOptions() {
     productMultiSelect.setOptions(
       allProductsData.map(p => ({ value: p.product_id, label: p.product_name }))
     );
+    
+    // 新增：检查是否只有一个品牌，如果是则自动应用单品牌逻辑
+    if (currentWarehouse === 'longqiao' && allBrands.length === 1) {
+      // 自动触发单品牌逻辑
+      setTimeout(() => {
+        loadData();
+      }, 0);
+    }
+    
     return Promise.resolve();
   } catch (error) {
     showRoundedAlert('筛选选项加载失败: ' + error.message, 'error');
@@ -1097,7 +1129,7 @@ function showDetailTable() {
   }
 }
 
-// **** 计算汇总数据 ****
+// 修改 calculateSummary 函数中的汇总逻辑
 function calculateSummary(data) {
   const summaryTableEl = document.getElementById('summaryTable');
   let thead = summaryTableEl.querySelector('thead');
@@ -1229,66 +1261,318 @@ function calculateSummary(data) {
     }
   });
 
-  // 更新统计卡片
-  totalQuantityEl.textContent = formatNumber(totalQuantity);
-  totalAmountEl.textContent = `¥${formatNumber(totalAmount)}`;
-  
-  const statLabels = document.querySelectorAll('.stat-card .stat-label');
-  if (currentWarehouse === 'longqiao') {
-    totalBrandsEl.textContent = `¥${formatNumber(freeIssueAmount)}`;
-    totalBrandsEl.style.color = '#e53e3e';
-    statLabels[3].textContent = '费用发放';
-    totalProfit <= 0 ? totalProfitEl.style.color = '#e53e3e' : '#4361ee';
-    totalProfitEl.textContent = `¥${formatNumber(totalProfit)}`;
-  } else {
-    totalBrandsEl.textContent = formatNumber(uniqueBrands.size);
-    totalBrandsEl.style.color = '';
-    statLabels[3].textContent = '品牌数量';
-  }
-  
-  totalProductsEl.textContent = formatNumber(uniqueProducts.size);
-  
-  // 按销售额从大到小排序
-  const sortedSummaries = Array.from(summaryMap.values()).sort((a, b) => 
-    b.total_amount - a.total_amount
-  );
-  
-  // 渲染汇总表格
-  tbody.innerHTML = ''; // 清空 tbody 而不是整个表格 
-  
-  sortedSummaries.forEach(summary => {
-    const row = document.createElement('tr');
-    let rowHTML = `
-        <td>${summary.brand}</td>
-        <td>${formatNumber(summary.total_quantity)}</td>
-        <td>¥${formatNumber(summary.total_amount)}</td>
-    `;
+  // 检查是否为隆桥仓库且只有一个品牌
+  const isSingleBrandInLongqiao = currentWarehouse === 'longqiao' && 
+    (uniqueBrands.size === 1 || allBrands.length === 1);
+  const singleBrandName = uniqueBrands.size === 1 ? 
+    Array.from(uniqueBrands)[0] : 
+    (allBrands.length === 1 ? allBrands[0] : null);
+
+  // 如果是隆桥仓库且只有一个品牌，则按销售人员汇总
+  if (isSingleBrandInLongqiao && singleBrandName) {
+    // 重新构建按销售人员的汇总数据
+    const salesSummaryMap = new Map();
     
-    if (currentWarehouse === 'longqiao') {
-        const profitStyle = summary.profit < 0 
-            ? 'style="color: #e53e3e; font-weight: bold;"' 
-            : '';
+    // 初始化统计变量（用于卡片显示）
+    let salesTotalQuantity = 0;
+    let salesTotalAmount = 0;
+    let salesTotalProfit = 0;
+    let salesFreeIssueAmount = 0;
+    const salesUniqueProducts = new Set(); // 按销售人员统计的商品种类
+    
+    data.forEach(record => {
+      // 只处理与该品牌相关的记录
+      if (record.brand === singleBrandName) {
+        // 统计商品种类
+        if (record.product_id) salesUniqueProducts.add(record.product_id);
         
-        rowHTML += `
-            <td ${profitStyle}>¥${formatNumber(summary.profit)}</td> 
-            <td>¥${formatNumber(summary.free_issue)}</td> 
-        `;
+        let amount, cost;
+        if (currentWarehouse === 'longqiao') {
+          amount = record.amount || 0;
+          cost = record.cost || 0;
+          
+          const sales = record.sales || '未知销售人员';
+          
+          if (!salesSummaryMap.has(sales)) {
+            salesSummaryMap.set(sales, {
+              sales: sales,
+              total_quantity: 0,
+              total_amount: 0,
+              total_cost: 0,
+              profit: 0,
+              free_issue: 0
+            });
+          }
+          
+          const summary = salesSummaryMap.get(sales);
+          
+          if (amount === 0) {
+            // 费用发放记录
+            summary.free_issue += cost;
+            salesFreeIssueAmount += cost;
+          } else {
+            // 正常销售记录
+            const quantity = record.quantity || 0;
+            summary.total_quantity += quantity;
+            summary.total_amount += amount;
+            summary.profit += amount - cost;
+            
+            salesTotalQuantity += quantity;
+            salesTotalAmount += amount;
+            salesTotalProfit += amount - cost;
+          }
+        }
+      }
+    });
+    
+    // 更新统计卡片（按销售人员数据）
+    totalQuantityEl.textContent = formatNumber(salesTotalQuantity);
+    totalAmountEl.textContent = `¥${formatNumber(salesTotalAmount)}`;
+    totalProfitEl.textContent = `¥${formatNumber(salesTotalProfit)}`;
+    totalBrandsEl.textContent = `¥${formatNumber(salesFreeIssueAmount)}`;
+    totalBrandsEl.style.color = '#e53e3e';
+    totalProductsEl.textContent = formatNumber(salesUniqueProducts.size); // 更新商品种类数
+    
+    const statLabels = document.querySelectorAll('.stat-card .stat-label');
+    statLabels[3].textContent = '费用发放';
+    salesTotalProfit <= 0 ? totalProfitEl.style.color = '#e53e3e' : totalProfitEl.style.color = '#4361ee';
+    
+    // 更新表头为销售人员
+    thead.innerHTML = `<tr><th>销售人员</th><th>总件数</th><th>总金额</th><th>总毛利</th><th>费用发放</th></tr>`;
+    
+    // 按销售额从大到小排序
+    const sortedSummaries = Array.from(salesSummaryMap.values()).sort((a, b) => 
+      b.total_amount - a.total_amount
+    );
+    
+    // 渲染汇总表格
+    tbody.innerHTML = ''; // 清空 tbody 而不是整个表格 
+    
+    sortedSummaries.forEach(summary => {
+      const row = document.createElement('tr');
+      const profitStyle = summary.profit < 0 
+          ? 'style="color: #e53e3e; font-weight: bold;"' 
+          : '';
+      
+      row.innerHTML = `
+          <td>${summary.sales}</td>
+          <td>${formatNumber(summary.total_quantity)}</td>
+          <td>¥${formatNumber(summary.total_amount)}</td>
+          <td ${profitStyle}>¥${formatNumber(summary.profit)}</td> 
+          <td>¥${formatNumber(summary.free_issue)}</td> 
+      `;
+      tbody.appendChild(row);
+    });
+    
+    // 渲染饼图（按销售人员）
+    if (sortedSummaries.length > 0) {
+      renderSalesPieChart(sortedSummaries);
+    } else {
+      clearPieChart();
+    }
+  } else {
+    // 原有逻辑：按品牌汇总
+    
+    // 更新统计卡片
+    totalQuantityEl.textContent = formatNumber(totalQuantity);
+    totalAmountEl.textContent = `¥${formatNumber(totalAmount)}`;
+    
+    const statLabels = document.querySelectorAll('.stat-card .stat-label');
+    if (currentWarehouse === 'longqiao') {
+      totalBrandsEl.textContent = `¥${formatNumber(freeIssueAmount)}`;
+      totalBrandsEl.style.color = '#e53e3e';
+      statLabels[3].textContent = '费用发放';
+      totalProfit <= 0 ? totalProfitEl.style.color = '#e53e3e' : '#4361ee';
+      totalProfitEl.textContent = `¥${formatNumber(totalProfit)}`;
+    } else {
+      totalBrandsEl.textContent = formatNumber(uniqueBrands.size);
+      totalBrandsEl.style.color = '';
+      statLabels[3].textContent = '品牌数量';
     }
     
-    row.innerHTML = rowHTML;
-    tbody.appendChild(row);
-  });
-  
-  // 渲染饼图
-  if (data && data.length > 0) {
-    renderBrandPieChart(sortedSummaries);
-  } else {
-    clearPieChart(); // 新增：清空饼图
+    totalProductsEl.textContent = formatNumber(uniqueProducts.size);
+    
+    // 按销售额从大到小排序
+    const sortedSummaries = Array.from(summaryMap.values()).sort((a, b) => 
+      b.total_amount - a.total_amount
+    );
+    
+    // 渲染汇总表格
+    tbody.innerHTML = ''; // 清空 tbody 而不是整个表格 
+    
+    sortedSummaries.forEach(summary => {
+      const row = document.createElement('tr');
+      let rowHTML = `
+          <td>${summary.brand}</td>
+          <td>${formatNumber(summary.total_quantity)}</td>
+          <td>¥${formatNumber(summary.total_amount)}</td>
+      `;
+      
+      if (currentWarehouse === 'longqiao') {
+          const profitStyle = summary.profit < 0 
+              ? 'style="color: #e53e3e; font-weight: bold;"' 
+              : '';
+          
+          rowHTML += `
+              <td ${profitStyle}>¥${formatNumber(summary.profit)}</td> 
+              <td>¥${formatNumber(summary.free_issue)}</td> 
+          `;
+      }
+      
+      row.innerHTML = rowHTML;
+      tbody.appendChild(row);
+    });
+    
+    // 渲染饼图
+    if (data && data.length > 0) {
+      renderBrandPieChart(sortedSummaries);
+    } else {
+      clearPieChart(); // 新增：清空饼图
+    }
   }
 
   setTimeout(() => {
     syncContainersDimensions();
   }, 0);  
+}
+
+// 新增：按销售人员渲染饼图的函数
+function renderSalesPieChart(salesSummaries) {
+  const chartContainer = document.getElementById('chartContainer');
+  
+  // 清空容器
+  chartContainer.innerHTML = salesSummaries.length > 0 
+    ? '<canvas id="brandChart"></canvas>' 
+    : '<div class="no-chart-data">无销售人员数据可展示</div>';
+  
+  if (salesSummaries.length === 0) return;
+  
+  const ctx = document.getElementById('brandChart').getContext('2d');
+  if (!ctx) {
+    return;
+  }  
+  
+  // 饼图颜色生成器 
+  const generateColors = (count) => {
+    const baseColors = [
+      '#4BC0C0', // 青色
+      '#f54444ff', // 红色
+      '#36A2EB', // 蓝色
+      '#F15BB5',  // 粉红        
+      '#FFCE56', // 黄色
+      '#26cd3cff', // 绿色
+      '#9966FF', // 紫色
+      '#FF9F40', // 橙色
+      '#1982C4', // 深蓝
+      '#6A4C93' // 深紫
+    ];
+    
+    // 当销售人员数量超过基础颜色时，生成随机颜色
+    if (count > baseColors.length) {
+      for (let i = baseColors.length; i < count; i++) {
+        baseColors.push(`#${Math.floor(Math.random()*16777215).toString(16)}`);
+      }
+    }
+    
+    return baseColors.slice(0, count);
+  };
+  
+  // 创建饼图
+  const chart = new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: salesSummaries.map(item => item.sales),
+      datasets: [{
+        data: salesSummaries.map(item => item.total_amount),
+        backgroundColor: generateColors(salesSummaries.length),
+        borderWidth: 1,
+        borderColor: '#fff',
+        hoverOffset: 15,
+        radius: '95%' // 设置饼图大小为95%
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'right',
+          labels: {
+            font: { 
+              size: 12,
+              weight: 'bold'
+            },
+            padding: 15,
+            usePointStyle: true,
+            color: '#333'
+          }
+        },
+        title: {
+          display: true,
+          text: '销售人员销售金额占比',
+          font: {
+            size: 18,
+            weight: 'bold'
+          },
+          color: '#222',
+          padding: {
+            top: 20,
+            bottom: 15
+          }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(0,0,0,0.8)',
+          titleFont: {
+            size: 14,
+            weight: 'bold'
+          },
+          bodyFont: {
+            size: 12
+          },
+          callbacks: {
+            label: function(context) {
+              const label = context.label || '';
+              const value = context.raw || 0;
+              const total = context.chart.getDatasetMeta(0).total;
+              const percentage = Math.round((value / total) * 100);
+              return `${label}: ¥${formatNumber(value)} (${percentage}%)`;
+            }
+          }
+        },
+        datalabels: {
+          display: true,
+          formatter: (value, ctx) => {
+            const total = ctx.chart.getDatasetMeta(0).total;
+            const percentage = Math.round((value / total) * 100);
+            const label = ctx.chart.data.labels[ctx.dataIndex];
+            
+            if (percentage < 5) return null;
+            
+            return `${label}\n${percentage}%`;
+          },
+          color: '#222',
+          font: {
+            weight: 'bold',
+            size: window.innerWidth <= 768 ? 8 : 12
+          },
+          align: 'end',
+          anchor: 'center',
+          offset: 0,
+          clip: false,
+          textAlign: 'center',
+          padding: 2
+        }
+      },
+      animation: {
+        animateRotate: true,
+        animateScale: true
+      }
+    },
+    plugins: [ChartDataLabels]
+  });
+
+  // 存储图表实例以便后续调整
+  chartContainer.chartInstance = chart;
 }
 
 // 同步容器尺寸函数
@@ -1571,7 +1855,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   const isAuthenticated = await initAuth();
   // 添加切换仓库按钮事件监听
   document.getElementById('switchWarehouseBtn').addEventListener('click', switchWarehouse);
-    
+  
+  // 无论是否已登录，都要设置用户菜单事件监听器
+  setupUserMenuEventListeners();
+
   // 如果用户已登录，初始化应用
   if (isAuthenticated) {
     initializeApp();
@@ -1607,7 +1894,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const password = loginPassword.value;
     
     if (!email || !password) {
-      showRoundedAlert('请输入邮箱和密码', 'warning'); // 替换alert
+      showRoundedAlert('请输入邮箱和密码', 'warning');
       return;
     }
     
@@ -1615,14 +1902,31 @@ document.addEventListener('DOMContentLoaded', async () => {
       email,
       password
     });
-    
+    showRoundedAlert('登录成功！', 'success');
     if (error) {
       console.error('登录错误:', error);
-      showRoundedAlert(`登录失败: 请检查用户名或密码是否正确！`, 'error'); // 替换alert
+      showRoundedAlert(`登录失败: 请检查用户名或密码是否正确！`, 'error');
       return;
     }
     
     user = data.user;
+    // 显示用户状态 - 根据邮箱前缀映射到用户名
+    const emailPrefix = user.email.split('@')[0]; // 获取邮箱前缀
+    const usernameMap = {
+      '162004332': '系统管理员',
+      'rickyone': '数据管理员',
+      '13762405681': '王英',
+      'ksf2025': '康师傅',
+      'pepsi_cola': '百事可乐',
+      'coca_cola': '可口可乐',
+      '15096086678': '娟子'
+    };
+  
+    // 如果邮箱前缀在映射表中，则使用映射的用户名，否则使用邮箱前缀
+    const displayName = usernameMap[emailPrefix] || emailPrefix;
+    userName.textContent = displayName;
+    
+    userStatus.style.display = 'block';
     authContainer.style.display = 'none';
     appContainer.style.display = 'block';
     
@@ -1630,7 +1934,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initializeApp();
   });
 
-  // ============== 注册功能 ==============
+  // ============== 注册功能 ==============  
   registerBtn.addEventListener('click', async () => {
     const email = registerEmail.value;
     const password = registerPassword.value;
@@ -1700,6 +2004,48 @@ document.addEventListener('DOMContentLoaded', async () => {
     showRoundedAlert('密码重置邮件已发送，请检查您的邮箱', 'success'); // 替换alert
   });
 }); 
+
+// 新增：专门用于设置用户菜单事件监听器的函数
+function setupUserMenuEventListeners() {
+  // 添加用户菜单切换功能
+  if (userInfo) {
+    userInfo.addEventListener('click', (e) => {
+      e.stopPropagation();
+      userMenu.style.display = userMenu.style.display === 'block' ? 'none' : 'block';
+    });
+  }
+
+  // 点击页面其他地方关闭用户菜单
+  document.addEventListener('click', (e) => {
+    if (userMenu && userMenu.style.display === 'block' && !userInfo.contains(e.target)) {
+      userMenu.style.display = 'none';
+    }
+  });
+
+  // 实现退出登录功能
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        const { error } = await supabaseClient.auth.signOut();
+        
+        if (error) {
+          showRoundedAlert('退出登录失败: ' + error.message, 'error');
+          return;
+        }
+        
+        user = null;
+        userStatus.style.display = 'none';
+        appContainer.style.display = 'none';
+        authContainer.style.display = 'block';
+        
+        showRoundedAlert('已成功退出登录', 'success');
+      } catch (error) {
+        console.error('退出登录错误:', error);
+        showRoundedAlert('退出登录时发生错误', 'error');
+      }
+    });
+  }
+}
 
 
 // ============== 修改后的应用初始化函数 ==============
