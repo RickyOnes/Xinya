@@ -101,10 +101,9 @@
       padding: 1.2rem; 
       overflow: visible;
     }
-    /* 只针对第二个.card下的.card-body */
-    /* 通过内部特征选择 */
-    .card-body > .detail-section {
-      margin-top: -1.2rem; /* 抵消父元素padding */
+    /* 详细销售记录 */
+    #detailcardBody {
+      padding: 0 ;
     }
     .filters-row { 
       display: grid; 
@@ -130,6 +129,7 @@
     
     label { 
       font-weight: 600; 
+      font-size: 1.2rem; 
       margin-bottom: 0.6rem; 
       color: var(--text-secondary);
       display: flex;
@@ -138,10 +138,10 @@
     }
     
     input, select { 
-      padding: 0.85rem; 
+      padding: 0.8rem; 
       border: 1px solid var(--border); 
       border-radius: 8px; 
-      font-size: 1rem; 
+      font-size: 1.1rem; 
       background: white;
       transition: border-color 0.3s, box-shadow 0.3s;
       width: 100%;
@@ -223,7 +223,7 @@
     
     .select-box {
       position: relative;
-      padding: 0.7rem 1rem 0.7rem 1rem;
+      padding: 0.6rem 1rem 0.6rem 1rem;
       border: 1px solid var(--border);
       border-radius: 8px;
       background: white;
@@ -231,7 +231,7 @@
       align-items: flex-start; /* 顶部对齐 */
       cursor: pointer;
       z-index: 1;
-      min-height: 50px;
+      min-height: 49.2px;
       transition: border-color 0.3s, box-shadow 0.3s;
       overflow: hidden;/* 超出部分隐藏 */
       
@@ -1102,6 +1102,18 @@
       .card-header h2 {
         font-size: 1.1rem;
       }   
+
+      label { 
+        margin-bottom: 0.3rem; 
+      }
+      input, select { 
+        padding: 0.62rem; 
+      }
+      .select-box {
+        min-height: 43.5px;
+        padding: 0.5rem 1rem 0.5rem 1rem;        
+      }
+
       button { 
         padding: 0.5rem 0.8rem; 
         font-size: 1rem; 
@@ -1123,7 +1135,7 @@
         display: block;
         width: 100%;
         margin-right: 0;
-        margin-bottom: 12px; /* 保持与图片相同的垂直间距 */
+        margin-bottom: 8px; /* 保持与图片相同的垂直间距 */
       }
 
       /* 清除所有grid定位 */
@@ -1571,7 +1583,7 @@
             </button>
           </h2>
         </div>
-        <div class="card-body">
+        <div class="card-body" id="detailcardBody">
           <div class="detail-section" id="detailSection">
             <table id="detailTable">
               <thead>
