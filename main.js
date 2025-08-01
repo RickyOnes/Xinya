@@ -96,7 +96,20 @@ function setDefaultDates() {
 
   const endDate = new Date();
   const startDate = new Date();
-  startDate.setDate(1); // 设置为当月1号
+  
+  // 检查今天是否是每月1号
+  if (endDate.getDate() === 1) {
+    // 设置为上个月的1号到上个月最后一天
+    startDate.setMonth(startDate.getMonth() - 1);
+    startDate.setDate(1);
+    
+    endDate.setMonth(endDate.getMonth() - 1);
+    endDate.setDate(new Date(endDate.getFullYear(), endDate.getMonth() + 1, 0).getDate());
+  } else {
+    // 默认设置为当月1号到昨天
+    startDate.setDate(1);
+    endDate.setDate(endDate.getDate() - 1);
+  }
   
   endDateEl.value = formatDate(endDate);
   startDateEl.value = formatDate(startDate);
