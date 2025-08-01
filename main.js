@@ -587,7 +587,7 @@ function filterProductsByBrand() {
     filteredProducts.map(p => ({ 
       value: p.product_id, 
       label: p.product_name 
-    }))
+    })).sort((a, b) => a.label.localeCompare(b.label)) // 按A-Z排序
   );
 }
 
@@ -617,6 +617,7 @@ function filterCustomersByBrand() {
   // 更新客户下拉框选项
   customerMultiSelect.setOptions(
     filteredCustomers.map(c => ({ value: c, label: c }))
+      .sort((a, b) => a.label.localeCompare(b.label))
   );
   
   // 重置客户选择状态
@@ -679,6 +680,7 @@ function reloadBrandAndProductOptions() {
     // 更新品牌下拉框选项
     brandMultiSelect.setOptions(
       allBrands.map(brand => ({ value: brand, label: brand }))
+        .sort((a, b) => a.label.localeCompare(b.label)) // 按A-Z排序
     );
     
     // 更新商品下拉框选项（根据当前品牌选择过滤）
@@ -697,7 +699,7 @@ function reloadBrandAndProductOptions() {
         uniqueCustomers.map(customer => ({ 
           value: customer, 
           label: customer 
-        }))
+        })).sort((a, b) => a.label.localeCompare(b.label)) // 按A-Z排序
       );
       if (customerMultiSelect) {   // 重置客户选择状态 
         customerMultiSelect.reset();
@@ -849,20 +851,24 @@ async function loadFilterOptions() {
     customerMultiSelect = new MultiSelect(customerSelector, customerOptions, '客户');
     customerMultiSelect.setOptions(
       allCustomers.map(c => ({ value: c, label: c }))
+        .sort((a, b) => a.label.localeCompare(b.label)) // 按A-Z排序      
     );
 
     // 设置下拉框选项
     warehouseMultiSelect.setOptions(
       allWarehouses.map(wh => ({ value: wh, label: wh }))
+        .sort((a, b) => a.label.localeCompare(b.label)) // 按A-Z排序
     );
     
     brandMultiSelect.setOptions(
       allBrands.map(brand => ({ value: brand, label: brand }))
+        .sort((a, b) => a.label.localeCompare(b.label)) // 按A-Z排序
     );
     
     // 初始商品选项
     productMultiSelect.setOptions(
       allProductsData.map(p => ({ value: p.product_id, label: p.product_name }))
+        .sort((a, b) => a.label.localeCompare(b.label)) // 按A-Z排序
     );
     
     // 新增：检查是否只有一个品牌，如果是则自动应用单品牌逻辑

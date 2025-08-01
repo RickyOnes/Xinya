@@ -395,6 +395,8 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        font-size: 1.1rem;
+        font-weight: 400;
       }
     }
     
@@ -868,9 +870,7 @@
         justify-content: flex-start;  /* 整体靠左对齐 */
         width: max-content; /* 允许表格根据内容扩展 */
         white-space: nowrap; /* 禁止文字换行 */
-        font-size: 0.85em; /* 减小字体大小 */
         table-layout: auto; /* 允许列宽自适应内容 */
-      
         label {
           white-space: nowrap; /* 禁止文字换行 */
         }
@@ -1023,6 +1023,7 @@
         width: max-content; /* 允许表格根据内容扩展 */
         font-size: 0.85em; /* 减小字体大小 */
         table-layout: auto; /* 允许列宽自适应内容 */
+        line-height: 1.2;
       }
       
       #detailTable th, 
@@ -1091,7 +1092,9 @@
     @media (max-width: 450px) {
       /* 优化表格字体大小 */
       #summaryTable {
-        font-size: 0.8em;
+        font-size: 1em;
+        font-weight: normal;
+        line-height: 1.2;
       }           
       #detailCount {  /* 详细部分计数器 */
         font-size: 1.1rem !important;
@@ -1102,14 +1105,23 @@
       .card-header h2 {
         font-size: 1.1rem;
       }   
-
+      .option {
+        label {
+          font-size: 0.9rem;
+          font-weight: 400;
+        }
+      }  
+      
+      .placeholder { 
+        font-size: 0.9rem;
+      }
       label { 
         margin-bottom: 0.3rem; 
         font-size: 1rem;         
       }
       input, select { 
         padding: 0.62rem; 
-        font-size: 1rem; 
+        font-size: 0.9rem; 
       }
       .select-box {
         min-height: 43.5px;
@@ -1120,9 +1132,7 @@
         gap: 0.8rem;
         margin-bottom: 1.5rem; 
       }      
-      body { 
-        line-height: 1; /* 提高可读性 */
-      }
+
       button { 
         padding: 0.5rem 0.8rem; 
         font-size: 1rem; 
