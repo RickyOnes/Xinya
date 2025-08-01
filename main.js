@@ -1601,7 +1601,7 @@ function syncContainersDimensions() {
   
   if (tableContainer && chartContainer) {
     // 获取左侧表格的实际高度
-    const tableHeight = tableContainer.scrollHeight;
+    const tableHeight = tableContainer.offsetHeight;
     
     // 设置右侧图表容器高度
     chartContainer.style.height = `${tableHeight}px`;
@@ -1613,7 +1613,7 @@ function syncContainersDimensions() {
   }
 }
 
-// ============== 新增: 饼图渲染函数 ==============
+// ======= 新增: 饼图渲染函数 =======
 function renderBrandPieChart(brandSummaries) {
   const chartContainer = document.getElementById('chartContainer');
   
