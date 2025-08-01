@@ -897,6 +897,10 @@
       #summaryTable {
         font-size: 0.9em;
       }      
+      #summaryTable th, 
+      #summaryTable td {
+        padding: 0.6rem;
+      }
 
       .filters-row {
         display: grid;
@@ -1092,10 +1096,15 @@
     @media (max-width: 450px) {
       /* 优化表格字体大小 */
       #summaryTable {
-        font-size: 1em;
-        font-weight: normal;
-        line-height: 1.2;
-      }           
+        font-weight: 400;
+        line-height: 1;
+        font-size: 0.8em;
+      }    
+      #summaryTable th, 
+      #summaryTable td {
+        padding: 0.5rem;
+      }       
+             
       #detailCount {  /* 详细部分计数器 */
         font-size: 1.1rem !important;
         color: #f3350f;
@@ -1108,7 +1117,7 @@
       .option {
         label {
           font-size: 0.9rem;
-          font-weight: 400;
+          font-weight: 300;
         }
       }  
       
