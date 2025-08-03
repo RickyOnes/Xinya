@@ -1857,6 +1857,96 @@ function hideLoadingOverlay() {
   }
 }
 
+// 导出为Excel功能
+function exportToExcel() {
+  try {
+    // 获取当前筛选后的数据
+    const data = getFilteredData();
+    
+    if (!data || data.length === 0) {
+      showRoundedAlert('没有数据可导出', 'warning');
+      return;
+    }
+    
+    // 创建工作簿
+    const wb = XLSX.utils.book_new();
+    
+    // 准备导出的数据
+    const exportData = data.map(record => {
+      let amount, warehouseField, cost;
+      
+      if (currentWarehouse === 'longqiao') {
+        amount = record.amount || 0;
+        warehouseField = record.sales || '--';
+        cost = record.cost || 0;
+      } else {
+        amount = (record.quantity || 0) * (record.unit_price || 0);
+        warehouseField = record.warehouse || '--';
+        cost = record.unit_price || 0;
+      }
+      
+      // 基础行数据
+      const row = {
+        '日期': record.sale_date || '--',
+      };
+      
+      // 根据仓库类型添加不同的列
+      if (currentWarehouse === 'longqiao') {
+        row['客户名称'] = record.customer || '--';
+      } else {
+        row['商品ID'] = record.product_id || '--';
+      }
+      
+      row['商品名称'] = record.product_name || '--';
+      row['品牌'] = record.brand || '--';
+      
+      if (currentWarehouse === 'longqiao') {
+        row['销售人员'] = warehouseField;
+      } else {
+        row['仓库'] = warehouseField;
+      }
+      
+      row['销量'] = record.quantity || 0;
+      
+      if (currentWarehouse === 'longqiao') {
+        row['成本'] = cost;
+      } else {
+        row['单价'] = cost;
+      }
+      
+      row['金额'] = amount;
+      
+      // 隆桥仓库添加利润列
+      if (currentWarehouse === 'longqiao') {
+        const profit = (record.amount || 0) - (record.cost || 0);
+        row['毛利'] = profit;
+      }
+      
+      return row;
+    });
+    
+    // 创建工作表
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    
+    // 添加工作表到工作簿
+    XLSX.utils.book_append_sheet(wb, ws, "销售记录");
+    
+    // 生成文件名
+    const startDate = startDateEl.value;
+    const endDate = endDateEl.value;
+    const warehouseName = currentWarehouse === 'longqiao' ? '隆桥仓库' : '多多买菜';
+    const fileName = `${warehouseName}_销售记录_${startDate}_${endDate}.xlsx`;
+    
+    // 导出文件
+    XLSX.writeFile(wb, fileName);
+    
+    showRoundedAlert('数据导出成功', 'success');
+  } catch (error) {
+    console.error('导出失败:', error);
+    showRoundedAlert('导出失败: ' + error.message, 'error');
+  }
+}
+
 // ============== 9. 页面初始化 ==============
 document.addEventListener('DOMContentLoaded', async () => {
   if (!supabaseClient) {
@@ -2095,6 +2185,7 @@ function initializeApp() {
       queryBtn.addEventListener('click', loadData);
       clearBtn.addEventListener('click', clearFilters);
       document.getElementById('toggleDetails').addEventListener('click', toggleDetailSection);
+      document.getElementById('exportDetails').addEventListener('click', exportToExcel);
       
       // 加载初始数据
       loadData();

@@ -7,6 +7,7 @@
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="icon" href="app32x32.png" type="image/x-icon">
   <style>
@@ -731,7 +732,7 @@
     .card-header .toggle-icon:hover {
       background-color: rgba(229, 62, 62, 0.1); /* 淡红色背景 */
       color: #e53e3e; /* 红色图标 */
-      transform: scale(1.2);
+      transform: scale(1.1);
       font-weight: bold; /* 加粗效果 */
     }
 
@@ -750,7 +751,19 @@
       font-weight: bold;
       vertical-align: middle;
     }   
-   
+
+    /* ==导出按钮样式== */
+    .card-header .toggle-icon#exportDetails {
+      color: #1eac31; /* 绿色图标 */
+    }
+
+    .card-header .toggle-icon#exportDetails:hover {
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    }
+
+    .card-header .toggle-icon#exportDetails:hover i {
+      filter: drop-shadow(0 0 1px rgba(5, 150, 105, 0.5));
+    }  
     /*===== 以下为【响应式设计】样式 =====*/
 
     @media (max-width: 1400px) {
@@ -1111,6 +1124,14 @@
         font-weight: bold;
         vertical-align: middle;
       }   
+
+      .card-header .toggle-icon {
+        font-size: 0.9rem;
+        width: 28px;
+        height: 28px;
+        margin-left: 4px;
+      }     
+
       .card-header h2 {
         font-size: 1.1rem;
       }   
@@ -1607,9 +1628,12 @@
           <h2>
             <i class="fas fa-list"></i> 详细销售记录
             <span id="detailCount"></span>
-            <button class="toggle-icon" id="toggleDetails">
+            <button class="toggle-icon" id="toggleDetails" title="显示/隐藏详情">
               <i class="fas fa-chevron-down"></i>
             </button>
+            <button class="toggle-icon" id="exportDetails" title="导出为Excel">
+              <i class="fas fa-file-export"></i>
+            </button>            
           </h2>
         </div>
         <div class="card-body" id="detailcardBody">
