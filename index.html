@@ -33,12 +33,12 @@
     
     body { 
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-      line-height: 1.6; /* 提高可读性 */
+      line-height: 1.6;
       color: var(--text-primary); 
       background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
       padding: 15px; 
       min-height: 100vh; 
-      overflow-x: hidden ; /* 防止水平滚动 */
+      overflow-x: hidden ;
     }
     
     .container { 
@@ -102,7 +102,7 @@
       padding: 1.2rem; 
       overflow: visible;
     }
-    /* 详细销售记录 */
+    
     #detailcardBody {
       padding: 0 ;
     }
@@ -112,18 +112,18 @@
       gap: 15px; 
       margin-bottom: 1.5rem; 
     }
-    /* 新增隆桥仓库专属样式 */
+    
     .filters-row.longqiao {
         grid-template-columns: 150px 150px 150px 150px 250px 1fr;
     }   
-    /* 修改包含总金额的卡片内边距 */
+    
     .stat-card:has(#totalAmount) {
       padding-left: 0.1rem !important;
       padding-right: 0.1rem !important;
     }           
 
     .filter-group { 
-      display: inline-flex;       /* 改为 inline-flex 才能生效 flex-direction */
+      display: inline-flex;       
       flex-direction: column; 
       position: relative;
     }
@@ -210,16 +210,13 @@
       box-shadow: 0 6px 12px rgba(255, 127, 0, 0.4);
     }
 
-    /* 添加仓库图标的橙色悬停效果 */
     #switchWarehouseBtn:hover .fa-warehouse {
       color: #fff;
       filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
     }    
 
-    /* 多选下拉框样式 - 优化合并 */
     .custom-multiselect {
       position: relative;
-      /*width: 100%;*/
     }
     
     .select-box {
@@ -229,44 +226,41 @@
       border-radius: 8px;
       background: white;
       display: flex;
-      align-items: flex-start; /* 顶部对齐 */
+      align-items: flex-start;
       cursor: pointer;
       z-index: 1;
       min-height: 49.2px;
       transition: border-color 0.3s, box-shadow 0.3s;
-      overflow: hidden;/* 超出部分隐藏 */
+      overflow: hidden;
       
-      /* 悬停效果 */
       &:hover {
         border-color: var(--primary);
       }
       
-      /* 选中项显示区域 */
       .selected-display {
         display: flex;
         flex-wrap: wrap;
         gap: 4px;
         padding: 2px 0;
-        /* width: 100%;*/
-        min-height: 26px; /* 最小高度 */
-        max-height: 130px; /* 最大高度 */
-        overflow-y: auto; /* 内容过多时滚动 */
+        min-height: 26px;
+        max-height: 130px;
+        overflow-y: auto;
         
         .tag {
           background-color: #eef2ff;
           color: var(--primary);
           border-radius: 16px;
-          padding: 4px 4px 4px 8px;  /* 上、右、下、左 */
+          padding: 4px 4px 4px 8px;
           font-size: 0.85rem;
           display: flex;
           align-items: center;
-          white-space: nowrap; /* 防止文字自动换行 */
+          white-space: nowrap;
           height: 26px;
           cursor: text;
         }
 
         .tag:hover {
-          background-color: #dbe4ff; /* 更深的背景色 */
+          background-color: #dbe4ff;
         }
 
         .tag-remove {
@@ -277,13 +271,13 @@
           align-items: center;
           justify-content: center;
           color: #999;
-          padding: 2px; /* 增加可点击区域 */
-          border-radius: 50%; /* 圆形区域更易点击 */
-          transition: all 0.2s ease; /* 添加过渡效果 */
+          padding: 2px;
+          border-radius: 50%;
+          transition: all 0.2s ease;
 
           &:hover {
-            color: #e53e3e; /* 更明显的悬停颜色 */
-            transform: scale(1.1); /* 悬停时轻微放大 */
+            color: #e53e3e;
+            transform: scale(1.1);
           }
         }
         
@@ -311,7 +305,6 @@
         top: 50%;
         transform: translateY(-50%);
         transition: transform 0.3s;
-        /* pointer-events: none; /* 防止点击箭头时关闭下拉 */
       }
       
       .clear-btn {
@@ -321,25 +314,21 @@
         cursor: pointer;
         color: #999;
         display: none;
-        transition: color 0.2s, transform 0.2s; /* 添加 transform 到过渡效果 */
+        transition: color 0.2s, transform 0.2s;
         
-        /* 设置变换的原点为顶部中心 */
         transform-origin: top center;
         
         &:hover {
           color: var(--clear-hover);
-          /* 合并两个变换：保持垂直居中并缩放 */
           transform: translateY(-50%) scale(1.2);
         }
       }
     }
     
-    /* 当有选中项时显示清除按钮 */
     .select-box.has-selection .clear-btn {
       display: block;
     }
 
-    /* 下拉菜单容器 */
     .options-container {
       position: absolute;
       top: 100%;
@@ -360,7 +349,6 @@
       transition: opacity 0.3s ease, transform 0.3s ease;      
     }
     
-    /* 修复悬停闪烁问题 */
     .options-container.visible {
       display: block;
       opacity: 1;
@@ -382,7 +370,7 @@
         background-color: #eef2ff;
       }
       
-      input { /* 复选框样式 */
+      input {
         margin-right: 10px;
         width: 18px;
         height: 18px;
@@ -401,7 +389,6 @@
       }
     }
     
-    /* 表格样式 */
     table { 
       width: 100%; 
       border-collapse: separate; 
@@ -430,7 +417,6 @@
       background-color: #f8fafc; 
     }
     
-    /* 统计卡片 */
     .summary-stats { 
       display: grid; 
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
@@ -466,12 +452,11 @@
       text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
     }
     
-    .summary-card {  /*淡蓝色背景 */
+    .summary-card {
       background: linear-gradient(135deg, #e0f7ff 0%, #f0f9ff 100%);
       border: 1px solid #d1e9ff;
     }
     
-    /* 加载动画 */
     .loading {
       display: none;
       position: fixed;
@@ -491,7 +476,6 @@
       overflow: hidden;
     }
 
-    /* 添加玻璃态效果伪元素 */
     .loading::before {
       content: '';
       position: absolute;
@@ -508,7 +492,6 @@
       border-radius: 24px;
     }
 
-    /* 新的旋转动画 */
     .spinner {
       position: relative;
       width: 70px;
@@ -545,7 +528,6 @@
       100% { transform: rotate(360deg); }
     }
 
-    /* 添加脉冲效果 */
     @keyframes pulse {
       0% { transform: scale(1); opacity: 1; }
       50% { transform: scale(1.05); opacity: 0.8; }
@@ -559,7 +541,6 @@
       animation: pulse 2s infinite;
     }
     
-    /* 控制按钮 */
     .controls {
       display: flex;
       justify-content: space-between;
@@ -575,7 +556,6 @@
     }
     
 
-    /* 按扭图标统一大小规则 */
     .action-buttons button i {
         font-size: 0.9em;
         width: 1.1em;
@@ -583,10 +563,9 @@
     }  
 
     .fa-warehouse {
-        transform: scale(0.7); /* 轻微缩小 */
+        transform: scale(0.7);
     }
 
-    /* 详细记录切换 */
     .toggle-details {
       display: inline-block;
       padding: 0.5rem 1rem;
@@ -602,49 +581,48 @@
     
     .detail-section {
       display: none;
-      overflow-x: auto; /* 添加水平滚动 */
-      width: 100%; /* 确保宽度占满父容器 */
-      -webkit-overflow-scrolling: touch; /* 优化移动端滚动体验 */
-      height: 500px; /* 设置固定高度 */      
-      position: relative; /* 为固定表头提供定位上下文 */
+      overflow-x: auto;
+      width: 100%;
+      -webkit-overflow-scrolling: touch;
+      height: 500px;
+      position: relative;
       &.visible {
         display: block;
       }
     }
-    /* 固定表头 */
+    
     #detailTable thead th {
-      position: sticky; /* 关键属性：固定表头 */
-      top: 0; /* 固定在顶部 */
-      z-index: 10; /* 确保表头在内容之上 */
-      background-color: #f1f5fd; /* 与原有表头背景色保持一致 */
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background-color: #f1f5fd;
       border-bottom: 1px solid var(--border);
     }   
     #detailTable th, 
     #detailTable td {
-      white-space: nowrap; /* 防止文本换行 */
+      white-space: nowrap;
     }
     #detailTable {
-      width: 100%; /* 允许表格根据内容扩展 */
-      table-layout: auto; /* 允许列宽自适应内容 */
-      overflow-y: auto;   /* 添加垂直滚动 */  
+      width: 100%;
+      table-layout: auto;
+      overflow-y: auto;  
     }    
-    /* ---汇总表格样式--- */
     #summaryTable {
-      table-layout: auto; /* 改为自动宽度 */
+      table-layout: auto;
       width: 100%;
       border-collapse: collapse;
-      margin-top: 0px; /* 上移补偿空白 */      
+      margin-top: 0px;      
     }
 
     #summaryTable th, 
     #summaryTable td {
       padding: 12px;
-      white-space: nowrap; /* 防止文本换行 */
+      white-space: nowrap;
       border-bottom: 1px solid var(--border);
     }
 
     #summaryTable th {
-      text-align: center; /* 表头文字居中 */
+      text-align: center;
       background-color: #f1f5fd;
       position: sticky;
       top: 0;
@@ -652,65 +630,59 @@
 
     #summaryTable td:first-child, 
     #summaryTable th:first-child {
-      text-align: left; /* 第一列品牌名称左对齐 */
+      text-align: left;
     }
 
     #summaryTable td:not(:first-child),
     #summaryTable th:not(:first-child) {
-      text-align: right; /* 所有数字列右对齐 */
+      text-align: right;
     }
 
-    /* 饼图主容器使用flex布局 */
     .summary-content {
       display: flex;
       gap: 1.5rem;
       margin-top: 1.5rem;
       width: 100%;
-      flex-wrap: nowrap; /* 防止换行 */
+      flex-wrap: nowrap;
     }
 
-    /* 表格容器 - 左侧50% */
     .summary-table-container {
-      flex: 1; /* 改为flex分配空间 */
+      flex: 1;
       height: 100%;
       overflow: auto;
       border: 1px solid var(--border);
       border-radius: 8px;
       box-sizing: border-box;
-      min-height: 350px; /* 添加最小高度 */
-      min-width: 300px;/* 添加最小宽度 */
-      padding-top: 0; /* 确保容器无上内边距 */
+      min-height: 350px;
+      min-width: 300px;
+      padding-top: 0;
     }
 
-    /* 图表容器 - 右侧50% */
     .chart-container {
-      flex: 1; /* 改为flex分配空间 */
+      flex: 1;
       background: white;
       border-radius: 8px;
       padding: 1rem;
       border: 1px solid var(--border);
       display: flex;
-      align-items:center; /* 垂直居中 */
-      justify-content: center; /* 居中对齐 */
-      min-height: 350px; /* 与表格容器保持一致 */
+      align-items:center;
+      justify-content: center;
+      min-height: 350px;
       box-sizing: border-box;
-      min-width: 300px; /* 添加与表格相同的最小宽度 */
-      position: relative; /* 确保图表正确定位 */
+      min-width: 300px;
+      position: relative;
     }
 
-    /* 添加Canvas样式 */
     #brandChart {
       max-width: 100%;
       max-height: 100%;
     }
 
-    /* 确保图表容器内部图表尺寸正确 */
     #chartContainer {
       width: 100%;
       height: 100%;
     }     
 
-    /*===== 详细列表按扭样式 ===== */
     .card-header .toggle-icon {
       background: none;
       border: none;
@@ -725,57 +697,55 @@
       justify-content: center;
       width: 36px;
       height: 36px;
-      vertical-align: middle; /* 确保垂直居中 */
+      vertical-align: middle;
     }
 
     .card-header .toggle-icon:hover {
-      background-color: rgba(229, 62, 62, 0.1); /* 淡红色背景 */
-      color: #e53e3e; /* 红色图标 */
+      background-color: rgba(229, 62, 62, 0.1);
+      color: #e53e3e;
       transform: scale(1.1);
-      font-weight: bold; /* 加粗效果 */
+      font-weight: bold;
     }
 
     .card-header .toggle-icon:hover i {
-      filter: drop-shadow(0 0 1px rgba(229, 62, 62, 0.5)); /* 红色光晕效果 */
+      filter: drop-shadow(0 0 1px rgba(229, 62, 62, 0.5));
     }
 
-    /* 当详细部分可见时，旋转图标 */
     .detail-section.visible ~ .card-body .card-header .toggle-icon i {
       transform: rotate(180deg);
     }
 
-    #detailCount {  /* 详细部分计数器 */
+    #detailCount {
       font-size: 1.3rem;
       color: #f3350f;
       font-weight: bold;
       vertical-align: middle;
     }   
 
-    /* ==导出按钮样式== */
     .card-header .toggle-icon#exportDetails {
-      color: #1eac31; /* 绿色图标 */
+      color: #1eac31;
     }
 
     .card-header .toggle-icon#exportDetails:hover {
-      background: linear-gradient(135deg, #059669 0%, #047857 100%);
+      background: linear-gradient(135deg, #69f0c59c 0%, #1ef4b77b 100%);
+      color: #4361ee ;
     }
 
     .card-header .toggle-icon#exportDetails:hover i {
       filter: drop-shadow(0 0 1px rgba(5, 150, 105, 0.5));
     }  
-    /*===== 以下为【响应式设计】样式 =====*/
-
+    
     @media (max-width: 1400px) {
       .filters-row { 
         display: grid;
-        grid-template-columns: 1fr 1fr 1fr; /* 3列等宽 */
-        grid-template-rows: auto auto;      /* 2行 */
+        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-rows: auto auto;
       }
 
       .filter-group:nth-child(1),
       .filter-group:nth-child(2),
       .filter-group:nth-child(3) {
-        grid-row: 1; /* 全部定位到第1行 */
+        grid-row: 1;
       }
       
       .filter-group:nth-child(4) {
@@ -785,7 +755,6 @@
         grid-column: 2 / 4;
       }
 
-      /* 隆桥仓库样式 */
       .filters-row.longqiao {
           grid-template-columns: 180px 180px 1fr 1fr;
           grid-template-rows: auto auto;
@@ -817,79 +786,73 @@
       font-size: 1.8rem;      
       }      
 
-      /* 统计卡片 */
       .summary-stats { 
         gap: 1rem;
         margin-bottom: 1.8rem; 
       }
-      /* 修改包含总金额的卡片内边距 */
       .stat-card:has(#totalAmount) {
         padding-left: 0.1rem !important;
         padding-right: 0.1rem !important;
       }      
       .summary-content {
-        gap: 1rem; /* 缩小间距 */
-        overflow-x: auto; /* 允许横向滚动 */
-        padding-bottom: 10px; /* 为滚动条留空间 */
+        gap: 1rem;
+        overflow-x: auto;
+        padding-bottom: 10px;
       }
       
-      /* 优化表格字体大小 */
       #summaryTable {
         font-size: 1em;
       }
 
-      /* 以下为【销售明细】样式 */
       .detail-section {
-        overflow-x: auto; /* 添加水平滚动 */
-        width: 100%; /* 确保宽度占满父容器 */
-        -webkit-overflow-scrolling: touch; /* 优化移动端滚动体验 */
-        height: 500px; /* 设置固定高度 */
+        overflow-x: auto;
+        width: 100%;
+        -webkit-overflow-scrolling: touch;
+        height: 500px;
       }
 
       #detailTable {
-        min-width: auto; /* 移除固定最小宽度 */
-        width: max-content; /* 允许表格根据内容扩展 */
-        font-size: 0.9em; /* 减小字体大小 */
-        table-layout: auto; /* 允许列宽自适应内容 */
-        overflow-y: auto;   /* 添加垂直滚动 */  
+        min-width: auto;
+        width: max-content;
+        font-size: 0.9em;
+        table-layout: auto;
+        overflow-y: auto;  
       }
       
       #detailTable th, 
       #detailTable td {
-        white-space: nowrap; /* 防止文本换行 */
-        min-width: 60px; /* 设置最小列宽 */
-        padding: 0.6rem; /* 减小内边距 */
+        white-space: nowrap;
+        min-width: 60px;
+        padding: 0.6rem;
       }    
-      /* 固定表头 */
+      
       #detailTable thead th {
-        position: sticky; /* 关键属性：固定表头 */
-        top: 0; /* 固定在顶部 */
-        z-index: 10; /* 确保表头在内容之上 */
-        background-color: #f1f5fd; /* 与原有表头背景色保持一致 */
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background-color: #f1f5fd;
       } 
 
-      /* ==以下为小屏【下拦框】样式 ==*/
-      /* 下拉菜单容器 */
       .options-container {
-        overflow-x: auto;  /* 允许水平滚动 */
-        -webkit-overflow-scrolling: touch; /* 优化移动端滚动体验 */          
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
         width: 100%;
       }
 
       .option {
         padding: 8px 16px;
-        align-items: center;  /*垂直居中 */
-        justify-content: flex-start;  /* 整体靠左对齐 */
-        width: max-content; /* 允许表格根据内容扩展 */
-        white-space: nowrap; /* 禁止文字换行 */
-        table-layout: auto; /* 允许列宽自适应内容 */
+        align-items: center;
+        justify-content: flex-start;
+        width: max-content;
+        white-space: nowrap;
+        table-layout: auto;
         label {
-          white-space: nowrap; /* 禁止文字换行 */
+          white-space: nowrap;
         }
       }  
       
       .user-status {
-        right: 10px !important; /* 距离右侧10px */
+        right: 10px !important;
       }      
     }
     
@@ -905,7 +868,6 @@
         flex: 1 1 auto;
       }
 
-      /* 优化表格字体大小 */
       #summaryTable {
         font-size: 0.9em;
       }      
@@ -916,17 +878,15 @@
 
       .filters-row {
         display: grid;
-        grid-template-columns: 1fr 1fr; /* 2列等宽 */
-        grid-template-rows: auto auto auto; /* 3行 */
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto auto;
       }
 
-      /* 第1行：条件1+2 */
       .filter-group:nth-child(1),
       .filter-group:nth-child(2) {
         grid-row: 1;
       }
 
-      /* 第2行：条件3+4（确保3在前） */
       .filter-group:nth-child(3) {
         grid-column: 1;
         grid-row: 2;
@@ -936,18 +896,15 @@
         grid-row: 2;
       }
 
-      /* 第3行：条件5（独占一行） */
       .filter-group:nth-child(5) {
-        grid-column: 2 / 4; /* 横跨两列 */
+        grid-column: 2 / 4;
         grid-row: 3;
       }
-      /* 隆桥仓库样式 */
       .filters-row.longqiao {
-          grid-template-columns: 1fr 1fr; /* 改为2列 */
-          grid-template-rows: auto auto auto; /* 改为3行 */
+          grid-template-columns: 1fr 1fr;
+          grid-template-rows: auto auto auto;
       }
       
-      /* 重新排列filter-group */
       .filters-row.longqiao .filter-group:nth-child(1) {
           grid-row: 1;
           grid-column: 1;
@@ -1007,49 +964,45 @@
 
       .select-box {
       .tag {
-        /* 关键调整 */
-        font-size: clamp(0.65rem, 1vw, 0.85rem); /* 动态字体大小 */
+        font-size: clamp(0.65rem, 1vw, 0.85rem);
         min-width: 0 !important;
         flex: 0 1 auto;
-        overflow: hidden; /* 隐藏溢出内容 */
-        text-overflow: ellipsis; /* 超出显示省略号 */
+        overflow: hidden;
+        text-overflow: ellipsis;
         white-space: nowrap;
 
-        /* 增加内边距兼容性 */
-        padding: 4px 6px; /* 上下4px，左右6px更协调 */
+        padding: 4px 6px;
         }
         .clear-btn {
           right: 5px;
         }
         
         .selected-display {
-          max-height: 80px; /* 移动端允许更多空间 */
+          max-height: 80px;
         }
       }
     
-      /* 以下为【销售明细】样式 */
       .detail-section {
-        overflow-x: auto; /* 添加水平滚动 */
-        width: 100%; /* 确保宽度占满父容器 */
-        -webkit-overflow-scrolling: touch; /* 优化移动端滚动体验 */
+        overflow-x: auto;
+        width: 100%;
+        -webkit-overflow-scrolling: touch;
       }
 
       #detailTable {
-        min-width: auto; /* 移除固定最小宽度 */
-        width: max-content; /* 允许表格根据内容扩展 */
-        font-size: 0.85em; /* 减小字体大小 */
-        table-layout: auto; /* 允许列宽自适应内容 */
+        min-width: auto;
+        width: max-content;
+        font-size: 0.85em;
+        table-layout: auto;
         line-height: 1.2;
       }
       
       #detailTable th, 
       #detailTable td {
-        white-space: nowrap; /* 防止文本换行 */
-        min-width: 60px; /* 设置最小列宽 */
-        padding: 0.5rem; /* 减小内边距 */
+        white-space: nowrap;
+        min-width: 60px;
+        padding: 0.5rem;
       }
 
-      /* 加载动画优化 */
       .loading {
         width: 80%;
         max-width: 280px;
@@ -1078,11 +1031,10 @@
         height: 32px;
       }     
       
-      /* 添加用户状态标签在移动端的适配样式 */
       .user-status {
         margin-left: 0;
         margin-top: 10px;
-        right: 1px !important; /* 距离右侧8px */
+        right: 1px !important;
       }
 
       .user-info {
@@ -1105,7 +1057,6 @@
     }  
     
     @media (max-width: 450px) {
-      /* 优化表格字体大小 */
       #summaryTable {
         font-weight: 400;
         line-height: 1.2;
@@ -1116,7 +1067,7 @@
         padding: 0.5rem;
       }       
              
-      #detailCount {  /* 详细部分计数器 */
+      #detailCount {
         font-size: 1.1rem !important;
         color: #f3350f;
         font-weight: bold;
@@ -1154,7 +1105,6 @@
         min-height: 43.5px;
         padding: 0.5rem 1rem 0.5rem 1rem;        
       }
-      /* 统计卡片 */
       .summary-stats { 
         gap: 0.8rem;
         margin-bottom: 1.5rem; 
@@ -1171,27 +1121,23 @@
       }   
       
       .filters-row {
-        /* 改为单列布局 */
-        display: block; /* 或 grid-template-columns: 1fr; */
+        display: block;
         grid-template-columns: unset;
         grid-template-rows: unset;
       }
 
       .filter-group {
-        /* 强制每个控件独占一行 */
         display: block;
         width: 100%;
         margin-right: 0;
-        margin-bottom: 8px; /* 保持与图片相同的垂直间距 */
+        margin-bottom: 8px;
       }
 
-      /* 清除所有grid定位 */
       .filter-group:nth-child(n) {
         grid-column: auto;
         grid-row: auto;
       }      
 
-      /* 在超小屏幕上进一步调整用户状态标签 */
       .user-status {
         position: fixed;
         bottom: 12px;
@@ -1216,7 +1162,6 @@
         font-size: 8px;
       }
       
-      /* 在超小屏幕上可能需要调整标题布局 */
       h1 {
         font-size: 1.5rem;
       }
@@ -1226,7 +1171,6 @@
       }      
     }
 
-    /*===== 以下为【认证表单】样式====== */
     .auth-form {
       display: none;
     }
@@ -1245,7 +1189,6 @@
       font-weight: bold;
     } 
 
-    /* 新增：登录/注册按钮居中+红色样式 */
     #loginBtn, #registerBtn {
       background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%) !important;
       display: flex;
@@ -1261,7 +1204,6 @@
       box-shadow: 0 6px 12px rgba(197, 48, 48, 0.4);
     }
 
-    /* 圆角提示容器样式 */
     .rounded-alert {
       position: fixed;
       top: 20px;
@@ -1271,7 +1213,7 @@
       z-index: 10000;
       display: flex;
       align-items: center;
-      transform: translateX(0); /* 移除水平偏移 */
+      transform: translateX(0);
       transition: transform 0.3s ease, opacity 0.3s ease;
     }
 
@@ -1310,12 +1252,11 @@
       opacity: 0;
     }    
 
-    /* 以下为【用户信息】样式 */
     .user-status {
-      position: fixed; /* 改为固定定位 */
-      bottom: 20px; /* 距离底部20px */
-      right: 20px; /* 距离右侧20px */
-      z-index: 10000; /* 确保在最上层 */
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 10000;
     }
 
     .user-dropdown {
@@ -1326,16 +1267,16 @@
       display: flex;
       align-items: center;
       cursor: pointer;
-      background: rgba(67, 97, 238, 0.9); /* 使用主题色背景 */
+      background: rgba(67, 97, 238, 0.9);
       padding: 8px 12px;
       border-radius: 20px;
       transition: background 0.3s;
       white-space: nowrap;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); /* 添加阴影效果 */
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     }
 
     .user-info:hover {
-      background: rgba(67, 97, 238, 1); /* 悬停时加深背景 */
+      background: rgba(67, 97, 238, 1);
     }
 
     .user-info i.fa-user-circle {
@@ -1385,7 +1326,6 @@
 </head>
 <body>
   <div class="container">
-    <!-- 添加登录容器 -->
     <div id="authContainer" style="display: none;">
       <div class="card" style="max-width: 500px; margin: 2rem auto;">
         <div class="card-header">
@@ -1439,9 +1379,7 @@
       </div>
     </div>
     
-    <!-- 主应用容器 -->
     <div id="appContainer" style="display: none;">        
-      <!-- 添加用户状态标签 -->
       <header style="display: flex; align-items: left; position: relative; min-height: 130px; padding: 10px 20px 15px 20px;">
         <h1><img src="icon64.png" alt="应用图标" style="border-radius: 8px; filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.5));">多多买菜销售数据查询系统</h1>
         <div class="user-status" id="userStatus" style="position: relative; bottom: auto; margin-left: auto;">
@@ -1482,16 +1420,15 @@
               <div class="custom-multiselect" id="warehouseMultiselect">
                 <div class="select-box" id="warehouseSelector">
                   <div class="placeholder">选择仓库</div>
-                  <div class="selected-display"></div> <!-- 新增：用于显示选中项 -->
+                  <div class="selected-display"></div>
                   <i class="fas fa-chevron-down arrow"></i>
-                  <i class="fas fa-times-circle clear-btn"></i> <!-- 新增：清除按钮 -->
+                  <i class="fas fa-times-circle clear-btn"></i>
                 </div>
                 <div class="options-container" id="warehouseOptions">
                   <div class="option" id="warehouseSelectAll">
                     <input type="checkbox" id="selectAllWarehouses">
                     <label for="selectAllWarehouses">全选</label>
                   </div>
-                  <!-- 仓库选项将通过JS动态添加 -->
                 </div>
               </div>
             </div>
@@ -1501,16 +1438,15 @@
               <div class="custom-multiselect" id="brandMultiselect">
                 <div class="select-box" id="brandSelector">
                   <div class="placeholder">选择品牌</div>
-                  <div class="selected-display"></div> <!-- 新增：用于显示选中项 -->
+                  <div class="selected-display"></div>
                   <i class="fas fa-chevron-down arrow"></i>
-                  <i class="fas fa-times-circle clear-btn"></i> <!-- 新增：清除按钮 -->
+                  <i class="fas fa-times-circle clear-btn"></i>
                 </div>
                 <div class="options-container" id="brandOptions">
                   <div class="option" id="brandSelectAll">
                     <input type="checkbox" id="selectAllBrands">
                     <label for="selectAllBrands">全选</label>
                   </div>
-                  <!-- 品牌选项将通过JS动态添加 -->
                 </div>
               </div>
             </div>
@@ -1520,16 +1456,15 @@
               <div class="custom-multiselect" id="customerMultiselect">
                 <div class="select-box" id="customerSelector">
                   <div class="placeholder">全部客户</div>
-                  <div class="selected-display"></div> <!-- 新增：用于显示选中项 -->
+                  <div class="selected-display"></div>
                   <i class="fas fa-chevron-down arrow"></i>
-                  <i class="fas fa-times-circle clear-btn"></i> <!-- 新增：清除按钮 -->
+                  <i class="fas fa-times-circle clear-btn"></i>
                 </div>
                 <div class="options-container" id="customerOptions">
                   <div class="option" id="customerSelectAll">
                     <input type="checkbox" id="selectAllCustomer">
                     <label for="selectAllCustomer">全选</label>
                   </div>
-                  <!-- 品牌选项将通过JS动态添加 -->
                 </div>
               </div>
             </div>       
@@ -1539,16 +1474,15 @@
               <div class="custom-multiselect" id="productMultiselect">
                 <div class="select-box" id="productSelector">
                   <div class="placeholder">选择商品</div>
-                  <div class="selected-display"></div> <!-- 新增：用于显示选中项 -->
+                  <div class="selected-display"></div>
                   <i class="fas fa-chevron-down arrow"></i>
-                  <i class="fas fa-times-circle clear-btn"></i> <!-- 新增：清除按钮 -->
+                  <i class="fas fa-times-circle clear-btn"></i>
                 </div>
                 <div class="options-container" id="productOptions">
                   <div class="option" id="productSelectAll">
                     <input type="checkbox" id="selectAllProducts">
                     <label for="selectAllProducts">全选</label>
                   </div>
-                  <!-- 商品选项将通过JS动态添加 -->
                 </div>
               </div>
             </div>
@@ -1598,7 +1532,6 @@
             </div>
           </div>
           
-          <!-- 新增: 汇总表格和饼图容器 -->
           <div class="summary-content">
             <div class="summary-table-container">
               <table id="summaryTable">
@@ -1614,7 +1547,6 @@
             </div>
             
             <div class="chart-container" id="chartContainer">
-              <!-- 饼图将动态渲染在这里 -->
             </div>
           </div>
         </div>
@@ -1660,7 +1592,6 @@
       </div>
     </div>
 
-    <!-- 逻辑脚本 -->
   <script src="main.js"></script>
 
 </body>
