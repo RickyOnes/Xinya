@@ -1,24 +1,32 @@
 name: Secure Deploy
-
-on: [push]
+on:
+  push:
+    branches: [ main ]
+    paths: 
+      - '**.js'
+      - '**.html'  # 仅相关文件变更时触发
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+
     steps:
       - uses: actions/checkout@v4
 
-      # 自动生成含密钥的配置文件
-      - name: Inject Secrets
+      # 安全注入（先创建目录）
+      - name: Setup Config
         run: |
-          echo "window.config = {
-            SUPABASE_URL: '${{ secrets.SUPABASE_URL }}',
-            SUPABASE_KEY: '${{ secrets.SUPABASE_KEY }}'
-          };" > public/config.js
+          mkdir -p public
+          echo "window.config={SUPABASE_URL:'${{secrets.URL}}',KEY:'${{secrets.KEY}}'};" > public/config.js
+          cat public/config.js | grep -o 'window.config'  # 验证生成
 
-      # 部署到 GitHub Pages
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./public
+          keep_files: true  # 保留历史构建文件
