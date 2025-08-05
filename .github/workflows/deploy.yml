@@ -1,0 +1,24 @@
+name: Secure Deploy
+
+on: [push]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # 自动生成含密钥的配置文件
+      - name: Inject Secrets
+        run: |
+          echo "window.config = {
+            SUPABASE_URL: '${{ secrets.SUPABASE_URL }}',
+            SUPABASE_KEY: '${{ secrets.SUPABASE_KEY }}'
+          };" > public/config.js
+
+      # 部署到 GitHub Pages
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
