@@ -9,9 +9,9 @@
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-  <script src="https://npmcdn.com/flatpickr/dist/l10n/zh.js"></script>  
+  <link rel="stylesheet" href="flatpickr.css">
+  <script src="flatpickr.js"></script>
+  <script src="zh.js"></script>
   <link rel="icon" href="app32x32.png" type="image/x-icon">
   <style>
     :root {
@@ -146,11 +146,15 @@
       border: 1px solid var(--border); 
       border-radius: 8px; 
       font-size: 1.1rem !important; 
+      font-weight: 500;
       background: white;
       transition: border-color 0.3s, box-shadow 0.3s;
       width: 100%;
     }
-    
+    #dateRangePicker { 
+      font-weight:normal!important; /* 取消加粗 */
+    }
+
     select {
       background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%234361ee'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
@@ -884,6 +888,7 @@
     
       input, select { 
         font-size: 1rem !important; 
+        font-weight: 500 !important;
       }
     }
     
@@ -1112,7 +1117,9 @@
       input, select { 
         padding: 0.62rem; 
         font-size: 0.9rem !important; 
+        font-weight: 500 !important;
       }
+
       .select-box {
         min-height: 43.5px;
         padding: 0.5rem 1rem 0.5rem 1rem;        

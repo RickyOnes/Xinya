@@ -2161,9 +2161,6 @@ function setupUserMenuEventListeners() {
 // ============== 应用初始化函数 ==============
 function initializeApp() {
   // 初始化Flatpickr
-  flatpickr.l10ns.zh.rangeSeparator = " ~ "; // 仅修改连接符
-  flatpickr.l10ns.zh.monthSelectorFormat = "Y年 n月";
-  flatpickr.l10ns.zh.months.longhand = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"]; // 数字月份
   flatpickrInstance = flatpickr(dateRangePicker, {
     mode: "range",
     dateFormat: "Y-m-d",
@@ -2176,7 +2173,9 @@ function initializeApp() {
     }
   });
   // 设置默认日期：当月1号到今天
-  setDefaultDates();
+  if (flatpickrInstance) {
+    setDefaultDates();
+  }
 
   // 添加日期变化监听（带防抖）
   let debounceTimer;
