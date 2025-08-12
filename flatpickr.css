@@ -271,7 +271,7 @@
   position: absolute;
   right: 0;
   width: 14px;
-  padding: 0 4px 0 2px;
+  padding: 0 0 0 0;
   height: 50%;
   line-height: 50%;
   opacity: 0;
@@ -365,9 +365,10 @@
 }
 
 .flatpickr-current-month .numInputWrapper {
-  width: 7ch;
+  width: 6.5ch;
   width: 7ch\0;
   display: inline-block;
+  margin-right: 5px;
 }
 
 .flatpickr-current-month .numInputWrapper span.arrowUp:after {
@@ -397,6 +398,7 @@
   -webkit-appearance: textfield;
   -moz-appearance: textfield;
   appearance: textfield;
+  border-radius: 3px;
 }
 
 .flatpickr-current-month input.cur-year:focus {
@@ -423,7 +425,7 @@
   font-family: inherit;
   height: auto;
   line-height: inherit;
-  margin: -1px 0 0 0;
+  margin: 0 0 0 0;
   outline: none;
   padding: 0 0 0 .5ch;
   position: relative;
@@ -432,11 +434,7 @@
   -webkit-appearance: menulist;
   -moz-appearance: menulist;
   width: auto;
-}
-
-/* 缩小月份下拉选项的字号 */
-.flatpickr-monthDropdown-month {
-  font-size: 15px !important; /* 调整为所需字号 */
+  border-radius: 3px;
 }
 
 .flatpickr-current-month .flatpickr-monthDropdown-months:focus,
@@ -452,6 +450,12 @@
   background-color: transparent;
   outline: none;
   padding: 0;
+}
+
+/* 缩小月份下拉选项的字号 */
+.flatpickr-monthDropdown-month {
+  font-size: 15px !important; /* 调整为所需字号 */
+  background-color:white !important; 
 }
 
 .flatpickr-weekdays {

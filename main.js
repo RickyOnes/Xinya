@@ -10,7 +10,6 @@ try {
   supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   if(supabaseClient) console.log('Supabase客户端初始化成功');
 } catch (error) {
-  console.error('Supabase初始化失败:', error);
   showRoundedAlert('系统初始化失败，请刷新页面或联系管理员', 'error'); // 替换alert
 }
 
@@ -74,6 +73,8 @@ let currentWarehouse = 'default'; // 'default' 或 'longqiao'
 let allSalesPersons = []; // 销售人员列表
 let allCustomers = []; // 新增：客户列表
 let salesRecords = []; // 存储销售记录
+let startDateStr = ''; // 全局开始日期字符串
+let endDateStr = ''; // 全局结束日期字符串
 
 // ============== 4. 工具函数 ==============
 // 数字格式化
@@ -137,6 +138,7 @@ async function initAuth() {
       userStatus.style.display = 'block';
       authContainer.style.display = 'none';
       appContainer.style.display = 'block';
+      showRoundedAlert(`欢迎${displayName}！`, 'success');
       return true;
     } else {
       userStatus.style.display = 'none';
@@ -144,7 +146,7 @@ async function initAuth() {
       return false;
     }
   } catch (error) {
-    console.error('用户认证发生错误:', error);
+    showRoundedAlert('用户认证发生错误:', error);
     return false;
   }
 }
@@ -716,7 +718,7 @@ function reloadBrandAndProductOptions() {
     }
     
   } catch (error) {
-    console.error('重新加载品牌和商品选项失败:', error);
+    showRoundedAlert('重新加载品牌和商品选项失败:', error);
   }
 }
 
@@ -771,7 +773,7 @@ async function fetchRecords(tableName, fields, conditions = {}) {
     }
     return allData;
   } catch (error) {
-    console.error(`从 ${tableName} 获取数据失败:`, error);
+    showRoundedAlert(`从 ${tableName} 获取数据失败:`, error);
     throw error;
   }
 }
@@ -797,8 +799,8 @@ async function loadFilterOptions() {
   };
   
   // 使用格式化的日期
-  const startDateStr = formatDate(startDate);
-  const endDateStr = formatDate(endDate);
+  startDateStr = formatDate(startDate);
+  endDateStr = formatDate(endDate);
     
     // 根据当前仓库选择不同的查询表
     const table = currentWarehouse === 'longqiao' ? 'longqiao_records' : 'sales_records';
@@ -895,7 +897,7 @@ async function loadFilterOptions() {
     
     return Promise.resolve();
   } catch (error) {
-    showRoundedAlert('筛选选项加载失败: ' + error.message, 'error');
+    showRoundedAlert(`筛选选项加载失败: ${ error.message}`, 'error');
     return Promise.reject(error);
   } finally {
     // 隐藏加载动画
@@ -1858,8 +1860,46 @@ function hideLoadingOverlay() {
   }
 }
 
-// 导出为Excel功能
-function exportToExcel() {
+// **** 添加动态加载xlsx的函数 ****
+async function loadXlsxLibrary() { 
+  try {
+    // 动态创建script标签加载xlsx库
+    const script = document.createElement('script');
+    script.src = 'https://cdn.bootcdn.net/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    
+    // 返回一个Promise，在脚本加载完成后resolve
+    return new Promise((resolve, reject) => {
+      script.onload = () => resolve(window.XLSX);
+      script.onerror = () => reject(new Error('XLSX库加载失败'));
+      document.head.appendChild(script);
+    });
+  } catch (error) {
+    showRoundedAlert(`数据导出错误：${error}`, 'error');
+    return null;
+  }
+}
+
+// **** 导出为Excel功能 ****
+async function exportToExcel() {
+  // 检测是否为微信浏览器
+  const isWechat = /MicroMessenger/i.test(navigator.userAgent);  
+  if (isWechat) {
+    showRoundedAlert(`微信浏览器不支持此功能，请在浏览器中打开网页导出数据。`, 'warning');
+    return;
+  }
+
+  // 确保xlsx库已加载
+  if (typeof XLSX === 'undefined') {
+    try {
+      await loadXlsxLibrary();
+      if (!window.XLSX) {
+        throw new Error('XLSX库加载失败');
+      }
+    } catch (error) {
+      showRoundedAlert('导出功能暂时不可用。');
+      return;
+    }
+  }  
   try {
     // 获取当前筛选后的数据
     const data = getFilteredData();
@@ -1933,25 +1973,21 @@ function exportToExcel() {
     XLSX.utils.book_append_sheet(wb, ws, "销售记录");
     
     // 生成文件名
-    const startDate = startDateEl.value;
-    const endDate = endDateEl.value;
     const warehouseName = currentWarehouse === 'longqiao' ? '隆桥仓库' : '多多买菜';
-    const fileName = `${warehouseName}_销售记录_${startDate}_${endDate}.xlsx`;
+    const fileName = `${warehouseName}_销售记录_${startDateStr}_${endDateStr}.xlsx`;
     
     // 导出文件
     XLSX.writeFile(wb, fileName);
-    
     showRoundedAlert('数据导出成功', 'success');
   } catch (error) {
-    console.error('导出失败:', error);
-    showRoundedAlert('导出失败: ' + error.message, 'error');
+    showRoundedAlert(`导出失败: ${ error.message}`, 'error');
   }
 }
 
 // ============== 9. 页面初始化 ==============
 document.addEventListener('DOMContentLoaded', async () => {
   if (!supabaseClient) {
-    console.error('错误: Supabase客户端未正确初始化');
+    showRoundedAlert('错误: Supabase客户端未正确初始化');
     queryBtn.disabled = true;
     queryBtn.textContent = '系统未初始化';
     queryBtn.style.background = '#e53e3e';
@@ -2014,7 +2050,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     showRoundedAlert('登录成功！', 'success');
     if (error) {
-      console.error('登录错误:', error);
       showRoundedAlert(`登录失败: 请检查用户名或密码是否正确！`, 'error');
       return;
     }
@@ -2039,10 +2074,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     userStatus.style.display = 'block';
     authContainer.style.display = 'none';
     appContainer.style.display = 'block';
+    showRoundedAlert(`欢迎${displayName}！`, 'success');
     
     // 登录成功后初始化应用
     initializeApp();
   });
+
+  // 添加回车键登录支持
+  if (loginPassword) {
+    loginPassword.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        loginBtn.click();
+      }
+    });
+  }
 
   // ============== 注册功能 ==============  
   registerBtn.addEventListener('click', async () => {
@@ -2106,7 +2152,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
     
     if (error) {
-      console.error('密码重置错误:', error);
       showRoundedAlert(`发送重置邮件失败: ${error.message}`, 'error'); // 替换alert
       return;
     }
@@ -2139,18 +2184,16 @@ function setupUserMenuEventListeners() {
         const { error } = await supabaseClient.auth.signOut();
         
         if (error) {
-          showRoundedAlert('退出登录失败: ' + error.message, 'error');
+          showRoundedAlert(`退出登录失败: ${ error.message}`, 'error');
           return;
         }
-        
-        user = null;
-        userStatus.style.display = 'none';
-        appContainer.style.display = 'none';
-        authContainer.style.display = 'block';
-        
         showRoundedAlert('已成功退出登录', 'success');
+
+        // 简单有效的解决方案：重新加载页面
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);        
       } catch (error) {
-        console.error('退出登录错误:', error);
         showRoundedAlert('退出登录时发生错误', 'error');
       }
     });
@@ -2164,7 +2207,6 @@ function initializeApp() {
   flatpickrInstance = flatpickr(dateRangePicker, {
     mode: "range",
     dateFormat: "Y-m-d",
-    locale: "zh",
     static: true,
     onChange: function(selectedDates) {
       if (selectedDates.length === 2) {
