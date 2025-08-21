@@ -1,1 +1,2354 @@
-let e,t;try{e=window.supabase.createClient("https://iglmqwpagzjadwauvchh.supabase.co","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlnbG1xd3BhZ3pqYWR3YXV2Y2hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4ODk4NDAsImV4cCI6MjA2NjQ2NTg0MH0.Mtiwp31mJvbLRTotbrb4_DobjjpM4kg9f4-G8oWz85E")}catch(e){ae("系统初始化失败，请刷新页面或联系管理员","error")}const n=document.getElementById("dateRangePicker"),o=document.getElementById("queryBtn"),a=document.getElementById("clearBtn"),l=document.getElementById("summaryTable").querySelector("tbody"),s=document.getElementById("detailTable").querySelector("tbody"),i=document.getElementById("loading"),r=document.getElementById("totalQuantity"),c=document.getElementById("totalAmount"),d=document.getElementById("totalProducts"),u=document.getElementById("totalBrands"),p=(document.getElementById("toggleDetails"),document.getElementById("detailSection")),h=document.getElementById("totalProfit"),m=(document.getElementById("switchWarehouseBtn"),document.getElementById("warehouseSelector")),g=document.getElementById("warehouseOptions"),y=document.getElementById("brandSelector"),f=document.getElementById("brandOptions"),b=document.getElementById("productSelector"),v=document.getElementById("productOptions"),w=document.getElementById("customerSelector"),E=document.getElementById("customerOptions"),C=document.getElementById("authContainer"),L=document.getElementById("appContainer"),q=document.getElementById("loginForm"),_=document.getElementById("registerForm"),x=document.getElementById("loginEmail"),$=document.getElementById("loginPassword"),S=document.getElementById("registerEmail"),k=document.getElementById("registerPassword"),B=document.getElementById("registerPhone"),I=document.getElementById("loginBtn"),M=document.getElementById("registerBtn"),T=document.getElementById("forgotPasswordLink"),D=document.querySelectorAll(".auth-tab"),V=document.getElementById("userStatus"),A=document.getElementById("userInfo"),F=document.getElementById("userName"),H=document.getElementById("userMenu"),O=document.getElementById("logoutBtn");let z,X,P,j,N=[],W=[],R=[],J={},Y=null,G=[],Z=null,Q="default",U=[],K=[],ee="",te="";function ne(e){return"number"!=typeof e?"0":e.toLocaleString("zh-CN",{minimumFractionDigits:0,maximumFractionDigits:2})}function oe(){const e=new Date,n=new Date;1===e.getDate()?(n.setMonth(n.getMonth()-1),n.setDate(1),e.setMonth(e.getMonth()-1),e.setDate(new Date(e.getFullYear(),e.getMonth()+1,0).getDate())):(n.setDate(1),e.setDate(e.getDate()-1)),t.setDate([n,e])}function ae(e,t="error"){const n=document.getElementById("custom-alert");n&&n.remove();const o=document.createElement("div");o.id="custom-alert",o.className=`rounded-alert ${t}`,o.innerHTML=`\n    <div class="alert-content">\n      <i class="fas fa-${"error"===t?"exclamation-circle":"check-circle"}"></i>\n      <span>${e}</span>\n    </div>\n  `,document.body.appendChild(o);const a=o.offsetWidth,l=(window.innerWidth-a)/2;o.style.top="20px",o.style.left=`${l}px`,setTimeout(()=>{o.classList.add("fade-out"),setTimeout(()=>o.remove(),300)},2e3)}function le(){if(p.classList.contains("visible")){p.classList.remove("visible");document.querySelector("#toggleDetails i").classList.replace("fa-chevron-up","fa-chevron-down")}Q="default"===Q?"longqiao":"default";const e=document.querySelector(".filters-row");"longqiao"===Q?e.classList.add("longqiao"):e.classList.remove("longqiao"),function(){const e=document.querySelector("header h1"),t=document.getElementById("profitCard");"longqiao"===Q?(e.innerHTML='<img src="icon64.png" alt="应用图标" style="border-radius: 8px; filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.5));"> 隆桥仓库销售数据查询系统',document.querySelector(".filter-group label:has(i.fas.fa-warehouse)").innerHTML='<i class="fas fa-user"></i> 销售人员',t.style.display="block"):(e.innerHTML='<img src="icon64.png" alt="应用图标" style="border-radius: 8px; filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.5));"> 多多买菜销售数据查询系统',document.querySelector(".filter-group label:has(i.fas.fa-user)").innerHTML='<i class="fas fa-warehouse"></i> 仓库',t.style.display="none");const n=document.getElementById("customerFilterGroup");n&&(n.style.display="longqiao"===Q?"block":"none")}(),he(),oe(),ce().then(()=>{z.reset(),X.reset(),P.reset(),j&&j.reset(),function(){const e=document.querySelector("#detailTable thead");let t=`\n    <tr>\n      <th>日期</th>\n      <th>${"longqiao"===Q?"客户名称":"商品ID"}</th> \n      <th>商品名称</th>\n      <th>品牌</th>\n      <th>${"longqiao"===Q?"销售人员":"仓库"}</th>\n      <th>销量</th>\n      <th>${"longqiao"===Q?"成本":"单价"}</th>\n      <th>金额</th>\n  `;"longqiao"===Q&&(t+="<th>毛利</th>");t+="</tr>",e.innerHTML=t}(),de()})}class se{constructor(e,t,n){this.selector=e,this.optionsContainer=t,this.placeholder=n,this.selectedValues=[],this.allOptions=[],this.clearBtn=e.querySelector(".clear-btn"),this.initEvents()}initEvents(){this.selector.addEventListener("click",e=>this.toggleDropdown(e)),this.clearBtn.addEventListener("click",e=>this.clearSelection(e)),this.optionsContainer.addEventListener("change",e=>this.handleOptionChange(e)),this.optionsContainer.addEventListener("mouseenter",()=>this.optionsContainer.classList.add("active")),this.optionsContainer.addEventListener("mouseleave",()=>this.optionsContainer.classList.remove("active"))}toggleDropdown(e){if(e.target.classList.contains("tag-remove")||e.target.classList.contains("tag")||e.target.closest(".tag-remove")||e.target.closest(".tag"))return;e.stopPropagation(),ie();if(!this.optionsContainer.classList.contains("visible")){this.optionsContainer.classList.add("visible"),Y=this.optionsContainer;this.selector.querySelector(".arrow").classList.replace("fa-chevron-down","fa-chevron-up"),this.positionDropdown()}}positionDropdown(){const e=this.selector.getBoundingClientRect(),t=this.selector.parentElement.getBoundingClientRect();this.optionsContainer.style.width=`${e.width}px`,this.optionsContainer.style.left=e.left-t.left+"px",this.optionsContainer.style.top=e.bottom-t.top+"px"}clearSelection(e){e.stopPropagation(),this.selectedValues=[],this.updateDisplay();this.optionsContainer.querySelectorAll('input[type="checkbox"]').forEach(e=>e.checked=!1),("brandSelector"===this.selector.id||"productSelector"===this.selector.id)&&(G=[],re())}handleOptionChange(e){if(!e.target.matches('input[type="checkbox"]'))return;const t=e.target,n=t.value;if(t.id.startsWith("selectAll")){const e=this.optionsContainer.querySelectorAll(`input[type="checkbox"]:not([id="${t.id}"])`);t.checked?(this.selectedValues=this.allOptions.map(e=>e.value),e.forEach(e=>e.checked=!0)):(this.selectedValues=[],e.forEach(e=>e.checked=!1))}else{if(t.checked)this.selectedValues.includes(n)||this.selectedValues.push(n);else{const e=this.selectedValues.indexOf(n);e>-1&&this.selectedValues.splice(e,1)}this.updateSelectAllState()}this.updateDisplay(),"brandSelector"===this.selector.id&&(G=[],re(),"longqiao"===Q&&function(){const e=X.selectedValues,t=z.selectedValues;let n=[];n=e.length>0||t.length>0?U.filter(n=>K.some(o=>o.customer===n&&(0===e.length||e.includes(o.brand))&&(0===t.length||t.includes(o.sales)))):U;j.setOptions(n.map(e=>({value:e,label:e})).sort((e,t)=>e.label.localeCompare(t.label))),j&&j.reset()}()),"warehouseSelector"===this.selector.id&&function(){if(!K||0===K.length)return;try{let e=[...K];"longqiao"===Q?z.selectedValues.length>0&&(e=e.filter(e=>z.selectedValues.includes(e.sales))):z.selectedValues.length>0&&(e=e.filter(e=>z.selectedValues.includes(e.warehouse)));const t=new Map;if(J={},e.forEach(e=>{e.product_id&&(t.has(e.product_id)||t.set(e.product_id,{product_id:e.product_id,product_name:e.product_name||"未知商品"}),J[e.product_id]=e.brand||"无品牌")}),R=Array.from(t.values()),W=[...new Set(Object.values(J))].sort(),X.setOptions(W.map(e=>({value:e,label:e})).sort((e,t)=>e.label.localeCompare(t.label))),re(),"longqiao"===Q){const t=[...new Set(e.map(e=>e.customer).filter(e=>e))].sort();j.setOptions(t.map(e=>({value:e,label:e})).sort((e,t)=>e.label.localeCompare(t.label))),j&&j.reset(),X&&X.reset()}}catch(e){ae(`重新加载品牌和商品选项失败: ${e}`,"error")}}()}updateDisplay(){const e=this.selector.querySelector(".placeholder"),t=this.selector.querySelector(".selected-display"),n=this.selector.querySelector(".arrow");if(t.innerHTML="",0===this.selectedValues.length)return e.textContent=`全部${this.placeholder}`,e.style.display="block",t.style.display="none",n.style.display="block",n.classList.replace("fa-times","fa-chevron-down"),void(this.clearBtn.style.display="none");e.style.display="none",t.style.display="flex";const o=this.selectedValues.slice(0,5),a=this.selectedValues.length-5;if(o.forEach(e=>{const n=this.allOptions.find(t=>t.value===e);n&&t.insertAdjacentHTML("beforeend",`\n        <div class='tag' data-value='${e}'>\n          ${n.label}\n          <span class='tag-remove'><i class="far fa-circle-xmark"></i></span> \n        </div>\n      `)}),a>0){const e=document.createElement("div");e.className="tag more-tag",e.textContent=`...等${this.selectedValues.length}项`,t.appendChild(e)}n.style.display="none",this.clearBtn.style.display="block"}reset(){this.selectedValues=[],this.updateDisplay();this.optionsContainer.querySelectorAll('input[type="checkbox"]').forEach(e=>e.checked=!1)}updateSelectAllState(){const e=this.optionsContainer.querySelector('input[id^="selectAll"]');if(e){const t=this.optionsContainer.querySelectorAll('input[type="checkbox"]:not([id^="selectAll"])');e.checked=t.length>0&&Array.from(t).every(e=>e.checked)}}setOptions(e){this.allOptions=e,this.renderOptions(),this.updateDisplay()}renderOptions(){this.optionsContainer.innerHTML="";const e=document.createElement("div");e.className="option",e.innerHTML=`\n      <input type="checkbox" id="selectAll${this.selector.id}">\n      <label for="selectAll${this.selector.id}">全选</label>\n    `,this.optionsContainer.appendChild(e),this.allOptions.forEach(e=>{const t=document.createElement("div");t.className="option",t.innerHTML=`\n        <input type="checkbox" id="${this.selector.id}-${e.value}" \n              value="${e.value}" ${this.selectedValues.includes(e.value)?"checked":""}>\n        <label for="${this.selector.id}-${e.value}">${e.label}</label>\n      `,this.optionsContainer.appendChild(t)})}}function ie(){document.querySelectorAll(".options-container").forEach(e=>{e.classList.remove("visible");const t=e.previousElementSibling.querySelector(".arrow");t&&t.classList.replace("fa-chevron-up","fa-chevron-down")}),Y=null}function re(){v.innerHTML="";const e=document.createElement("div");e.className="option",e.id="productSelectAll",e.innerHTML='\n    <input type="checkbox" id="selectAllProducts">\n    <label for="selectAllProducts">全选</label>\n  ',v.appendChild(e);let t=[],n=X.selectedValues.length;n>0?t=R.filter(e=>J[e.product_id]&&X.selectedValues.includes(J[e.product_id])):(t=R,n="全部"),P.selectedValues=[],t.forEach(e=>{const t=document.createElement("div");t.className="option";const n=P.selectedValues.includes(e.product_id);t.innerHTML=`\n      <input type="checkbox" id="product-${e.product_id}" \n             value="${e.product_id}" ${n?"checked":""}>\n      <label for="product-${e.product_id}">${e.product_name}</label>\n    `,v.appendChild(t)});b.querySelector(".placeholder").textContent=0===X.selectedValues.length?"全部商品":`已筛选${n}个品牌`,P.setOptions(t.map(e=>({value:e.product_id,label:e.product_name})).sort((e,t)=>e.label.localeCompare(t.label)))}async function ce(){try{i.style.display="block",ye();const n=t.selectedDates,o=n[0],a=n[1],l=e=>`${e.getFullYear()}-${String(e.getMonth()+1).padStart(2,"0")}-${String(e.getDate()).padStart(2,"0")}`;ee=l(o),te=l(a);const s="longqiao"===Q?"longqiao_records":"sales_records",r="longqiao"===Q?["sale_date","product_id","product_name","sales","quantity","customer","amount","cost","brand"]:["sale_date","product_id","product_name","warehouse","quantity","unit_price","brand","pieces"],c={sale_date:{gte:ee,lte:te}};if(K=await async function(t,n,o={}){if(!e)throw new Error("Supabase客户端未初始化");try{const a=1e4;let l=[],s=0,i=!0,r=e.from(t).select(n.join(","));for(Object.entries(o).forEach(([e,t])=>{Array.isArray(t)?r=r.in(e,t):void 0!==t&&(r="object"==typeof t&&t.gte&&t.lte?r.gte(e,t.gte).lte(e,t.lte):r.eq(e,t))});i;){let e=r.range(s,s+a-1);const{data:t,error:n}=await e;if(n)throw n;t&&t.length>0&&(l=[...l,...t]),i=t.length===a,s+=a}return l}catch(e){throw ae(`从 ${t} 获取数据失败:${e}`,"error"),e}}(s,r,c),K.length>0){const e="longqiao"===Q?"sales":"warehouse";N=[...new Set(K.map(t=>t[e]))].filter(e=>e).sort()}if(J={},K.length>0){const e=new Map;K.forEach(t=>{t.product_id&&!e.has(t.product_id)&&e.set(t.product_id,{product_id:t.product_id,product_name:t.product_name}),t.product_id&&t.brand&&(J[t.product_id]=t.brand)}),R=Array.from(e.values()),W=[...new Set(K.map(e=>e.brand))].filter(e=>e).sort()}return"longqiao"===Q&&K.length>0&&(U=[...new Set(K.map(e=>e.customer))].filter(e=>e).sort()),z=new se(m,g,"longqiao"===Q?"销售人员":"仓库"),X=new se(y,f,"品牌"),P=new se(b,v,"商品"),j=new se(w,E,"客户"),j.setOptions(U.map(e=>({value:e,label:e})).sort((e,t)=>e.label.localeCompare(t.label))),z.setOptions(N.map(e=>({value:e,label:e})).sort((e,t)=>e.label.localeCompare(t.label))),X.setOptions(W.map(e=>({value:e,label:e})).sort((e,t)=>e.label.localeCompare(t.label))),P.setOptions(R.map(e=>({value:e.product_id,label:e.product_name})).sort((e,t)=>e.label.localeCompare(t.label))),"longqiao"===Q&&1===W.length&&setTimeout(()=>{de()},0),Promise.resolve()}catch(e){return ae(`筛选选项加载失败: ${e.message}`,"error"),Promise.reject(e)}finally{i.style.display="none",fe()}}function de(){if(p.classList.contains("visible")){p.classList.remove("visible");document.querySelector("#toggleDetails i").classList.replace("fa-chevron-up","fa-chevron-down")}l.innerHTML="",s.innerHTML="",he();try{let e=K;"longqiao"===Q?z.selectedValues.length>0&&(e=e.filter(e=>z.selectedValues.includes(e.sales))):z.selectedValues.length>0&&(e=e.filter(e=>z.selectedValues.includes(e.warehouse))),X.selectedValues.length>0&&(e=e.filter(e=>X.selectedValues.includes(e.brand))),P.selectedValues.length>0&&(e=e.filter(e=>P.selectedValues.includes(e.product_id))),"longqiao"===Q&&j&&j.selectedValues.length>0&&(e=e.filter(e=>j.selectedValues.includes(e.customer))),function(e){const t=document.getElementById("summaryTable");let n=t.querySelector("thead");n||(n=document.createElement("thead"),t.insertBefore(n,t.firstChild));let o="<tr><th>品牌</th><th>总件数</th><th>总金额</th>";"longqiao"===Q&&(o+="<th>总毛利</th><th>费用发放</th>");o+="</tr>",n.innerHTML=o;let a=t.querySelector("tbody");a||(a=document.createElement("tbody"),t.appendChild(a));if(!e||0===e.length){r.textContent="0",c.textContent="¥0.00",d.textContent="0",u.textContent="0","longqiao"===Q&&(h.textContent="¥0.00");const e="longqiao"===Q?5:3;return void(a.innerHTML=`\n      <tr>\n          <td colspan="${e}" style="text-align: center; padding: 30px; color: #6c757d;">\n          <i class="fas fa-chart-bar" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>\n          无汇总数据\n        </td>\n      </tr>\n    `)}let l=0,s=0,i=0,p=0;const m=new Set,g=new Set,y=new Map;e.forEach(e=>{let t,n;if(e.product_id&&g.add(e.product_id),e.brand&&m.add(e.brand),"longqiao"===Q)if(t=e.amount||0,n=e.cost||0,0===t)p+=n;else{const o=e.quantity||0;l+=o,s+=t,i+=t-n}else{const o=e.pieces||0,a=e.quantity||0,i=e.unit_price||0;t=a*i,l+=o,s+=t,n=i}if("longqiao"!==Q||0!==t){const o=e.brand||"未知品牌";y.has(o)||y.set(o,{brand:o,total_quantity:0,total_amount:0,total_cost:0,profit:0,free_issue:0});const a=y.get(o);"longqiao"===Q?(a.total_quantity+=e.quantity||0,a.total_amount+=t,a.total_cost+=n,a.profit+=t-n):(a.total_quantity+=e.pieces||0,a.total_amount+=t)}if("longqiao"===Q&&0===t){const t=e.brand||"未知品牌";y.has(t)||y.set(t,{brand:t,total_quantity:0,total_amount:0,total_cost:0,profit:0,free_issue:0});y.get(t).free_issue+=n}});const f="longqiao"===Q&&(1===m.size||1===W.length),b=1===m.size?Array.from(m)[0]:1===W.length?W[0]:null;if(f&&b){const t=new Map;let o=0,l=0,s=0,i=0;const p=new Set;e.forEach(e=>{if(e.brand===b){let n,a;if(e.product_id&&p.add(e.product_id),"longqiao"===Q){n=e.amount||0,a=e.cost||0;const r=e.sales||"未知销售人员";t.has(r)||t.set(r,{sales:r,total_quantity:0,total_amount:0,total_cost:0,profit:0,free_issue:0});const c=t.get(r);if(0===n)c.free_issue+=a,i+=a;else{const t=e.quantity||0;c.total_quantity+=t,c.total_amount+=n,c.profit+=n-a,o+=t,l+=n,s+=n-a}}}}),r.textContent=ne(o),c.textContent=`¥${ne(l)}`,h.textContent=`¥${ne(s)}`,u.textContent=`¥${ne(i)}`,u.style.color="#e53e3e",d.textContent=ne(p.size);document.querySelectorAll(".stat-card .stat-label")[3].textContent="费用发放",h.style.color=s<=0?"#e53e3e":"#4361ee",n.innerHTML="<tr><th>销售人员</th><th>总件数</th><th>总金额</th><th>总毛利</th><th>费用发放</th></tr>";const m=Array.from(t.values()).sort((e,t)=>t.total_amount-e.total_amount);a.innerHTML="",m.forEach(e=>{const t=document.createElement("tr"),n=e.profit<0?'style="color: #e53e3e; font-weight: bold;"':"";t.innerHTML=`\n          <td>${e.sales}</td>\n          <td>${ne(e.total_quantity)}</td>\n          <td>¥${ne(e.total_amount)}</td>\n          <td ${n}>¥${ne(e.profit)}</td> \n          <td>¥${ne(e.free_issue)}</td> \n      `,a.appendChild(t)}),m.length>0?function(e){const t=document.getElementById("chartContainer");if(t.innerHTML=e.length>0?'<canvas id="brandChart"></canvas>':'<div class="no-chart-data">无销售人员数据可展示</div>',0===e.length)return;const n=document.getElementById("brandChart").getContext("2d");if(!n)return;const o=e=>{const t=["#4BC0C0","#f54444ff","#36A2EB","#F15BB5","#FFCE56","#26cd3cff","#9966FF","#FF9F40","#1982C4","#6A4C93"];if(e>t.length)for(let n=t.length;n<e;n++)t.push(`#${Math.floor(16777215*Math.random()).toString(16)}`);return t.slice(0,e)},a=new Chart(n,{type:"pie",data:{labels:e.map(e=>e.sales),datasets:[{data:e.map(e=>e.total_amount),backgroundColor:o(e.length),borderWidth:1,borderColor:"#fff",hoverOffset:15,radius:"95%"}]},options:{responsive:!0,maintainAspectRatio:!1,plugins:{legend:{position:"right",labels:{font:{size:12,weight:"bold"},padding:15,usePointStyle:!0,color:"#333"}},title:{display:!0,text:"销售人员销售金额占比",font:{size:18,weight:"bold"},color:"#222",padding:{top:20,bottom:15}},tooltip:{backgroundColor:"rgba(0,0,0,0.8)",titleFont:{size:14,weight:"bold"},bodyFont:{size:12},callbacks:{label:function(e){const t=e.label||"",n=e.raw||0,o=e.chart.getDatasetMeta(0).total,a=Math.round(n/o*100);return`${t}: ¥${ne(n)} (${a}%)`}}},datalabels:{display:!0,formatter:(e,t)=>{const n=t.chart.getDatasetMeta(0).total,o=Math.round(e/n*100),a=t.chart.data.labels[t.dataIndex];return o<5?null:`${a}\n${o}%`},color:"#222",font:{weight:"bold",size:window.innerWidth<=768?8:12},align:"end",anchor:"center",offset:0,clip:!1,textAlign:"center",padding:2}},animation:{animateRotate:!0,animateScale:!0}},plugins:[ChartDataLabels]});t.chartInstance=a}(m):he()}else{r.textContent=ne(l),c.textContent=`¥${ne(s)}`;const t=document.querySelectorAll(".stat-card .stat-label");"longqiao"===Q?(u.textContent=`¥${ne(p)}`,u.style.color="#e53e3e",t[3].textContent="费用发放",!(i<=0)||(h.style.color="#e53e3e"),h.textContent=`¥${ne(i)}`):(u.textContent=ne(m.size),u.style.color="",t[3].textContent="品牌数量"),d.textContent=ne(g.size);const n=Array.from(y.values()).sort((e,t)=>t.total_amount-e.total_amount);a.innerHTML="",n.forEach(e=>{const t=document.createElement("tr");let n=`\n          <td>${e.brand}</td>\n          <td>${ne(e.total_quantity)}</td>\n          <td>¥${ne(e.total_amount)}</td>\n      `;if("longqiao"===Q){n+=`\n              <td ${e.profit<0?'style="color: #e53e3e; font-weight: bold;"':""}>¥${ne(e.profit)}</td> \n              <td>¥${ne(e.free_issue)}</td> \n          `}t.innerHTML=n,a.appendChild(t)}),e&&e.length>0?function(e){const t=document.getElementById("chartContainer");if(t.innerHTML=e.length>0?'<canvas id="brandChart"></canvas>':'<div class="no-chart-data">无品牌数据可展示</div>',0===e.length)return;const n=document.getElementById("brandChart").getContext("2d");if(!n)return;const o=e=>{if(baseColors="longqiao"===Q?["#4BC0C0","#f54444ff","#36A2EB","#F15BB5","#FFCE56","#26cd3cff","#9966FF","#FF9F40","#1982C4","#6A4C93"]:["#26cd3cff","#FFCE56","#f54444ff","#36A2EB","#F15BB5","#9966FF","#FF9F40","#6A4C93","#4BC0C0","#1982C4"],e>baseColors.length)for(let t=baseColors.length;t<e;t++)baseColors.push(`#${Math.floor(16777215*Math.random()).toString(16)}`);return baseColors.slice(0,e)},a=new Chart(n,{type:"pie",data:{labels:e.map(e=>e.brand),datasets:[{data:e.map(e=>e.total_amount),backgroundColor:o(e.length),borderWidth:1,borderColor:"#fff",hoverOffset:15,radius:"95%"}]},options:{responsive:!0,maintainAspectRatio:!1,plugins:{legend:{position:"right",labels:{font:{size:12,weight:"bold"},padding:15,usePointStyle:!0,color:"#333"}},title:{display:!0,text:"品牌销售金额占比",font:{size:18,weight:"bold"},color:"#222",padding:{top:20,bottom:15}},tooltip:{backgroundColor:"rgba(0,0,0,0.8)",titleFont:{size:14,weight:"bold"},bodyFont:{size:12},callbacks:{label:function(e){const t=e.label||"",n=e.raw||0,o=e.chart.getDatasetMeta(0).total,a=Math.round(n/o*100);return`${t}: ¥${ne(n)} (${a}%)`}}},datalabels:{display:!0,formatter:(e,t)=>{const n=t.chart.getDatasetMeta(0).total,o=Math.round(e/n*100),a=t.chart.data.labels[t.dataIndex];return o<5?null:`${a}\n${o}%`},color:"#222",font:{weight:"bold",size:window.innerWidth<=768?8:12},align:"end",anchor:"center",offset:0,clip:!1,textAlign:"center",padding:2}},animation:{animateRotate:!0,animateScale:!0}},plugins:[ChartDataLabels]});t.chartInstance=a}(n):he()}setTimeout(()=>{!function(){const e=document.querySelector(".summary-table-container"),t=document.querySelector(".chart-container");if(e&&t){const n=e.offsetHeight;t.style.height=`${n}px`,t.chartInstance&&t.chartInstance.resize()}}()},0)}(e),ue(e,!1)}catch(e){console.error("查询错误详情:",e),i.innerHTML=`\n      <div style="text-align: center; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">\n        <div style="color: #e53e3e; font-size: 3rem; margin-bottom: 1rem;">⚠️</div>\n        <p style="font-size: 1.2rem; margin-bottom: 0.5rem;">数据加载失败</p>\n        <p>${e.message}</p>\n      </div>\n    `}}function ue(e,t=!1){const n=document.getElementById("detailCount");e&&0!==e.length?n.textContent=`(${e.length}条)`:n.textContent="(0条数据)",t&&setTimeout(()=>{try{const t=s;if(t.innerHTML="",e&&e.length>0&&e.sort((e,t)=>new Date(t.sale_date)-new Date(e.sale_date)),!e||0===e.length)return void(t.innerHTML=`\n          <tr>\n            <td colspan="${"longqiao"===Q?9:8}" style="text-align: center; padding: 30px; color: #6c757d;">\n              <i class="fas fa-database" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>\n              未找到匹配的记录\n            </td>\n          </tr>\n        `);e.forEach(e=>{const n=document.createElement("tr");let o,a,l;if("longqiao"===Q?(o=e.amount||0,a=e.sales||"--",l=e.cost||0):(o=(e.quantity||0)*(e.unit_price||0),a=e.warehouse||"--",l=e.unit_price||0),n.innerHTML=`\n          <td>${e.sale_date||"--"}</td>\n          <td>${"longqiao"===Q?e.customer||"--":e.product_id||"--"}</td>\n          <td>${e.product_name||"--"}</td>\n          <td>${e.brand||"--"}</td>\n          <td>${a}</td>\n          <td>${ne(e.quantity||0)}</td>\n          <td>${l}</td>\n          <td>¥${ne(o)}</td>\n        `,"longqiao"===Q){const t=(e.amount||0)-(e.cost||0),o=t<0?'style="color: #e53e3e; font-weight: bold;"':"";n.innerHTML+=`<td ${o}>¥${ne(t)}</td>`}t.appendChild(n)})}catch(e){console.error("渲染详细表格时出错:",e),s.innerHTML=`\n        <tr>\n          <td colspan="${"longqiao"===Q?9:8}" style="text-align: center; padding: 30px; color: #e53e3e;">\n            <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>\n            <p>渲染表格时发生错误</p>\n          </td>\n        </tr>\n      `}},0)}function pe(){let e=K;return"longqiao"===Q?z.selectedValues.length>0&&(e=e.filter(e=>z.selectedValues.includes(e.sales))):z.selectedValues.length>0&&(e=e.filter(e=>z.selectedValues.includes(e.warehouse))),X.selectedValues.length>0&&(e=e.filter(e=>X.selectedValues.includes(e.brand))),P.selectedValues.length>0&&(e=e.filter(e=>P.selectedValues.includes(e.product_id))),"longqiao"===Q&&j&&j.selectedValues.length>0&&(e=e.filter(e=>j.selectedValues.includes(e.customer))),e}function he(){const e=document.getElementById("chartContainer");e.innerHTML='<div class="no-chart-data">无品牌数据可展示</div>',e.chartInstance&&(e.chartInstance.destroy(),e.chartInstance=null)}function me(){z.reset(),X.reset(),P.reset(),j&&j.reset(),re(),he(),oe(),ce().then(()=>{de()})}function ge(){p.classList.toggle("visible");const e=document.querySelector("#toggleDetails i");p.classList.contains("visible")?(e.classList.replace("fa-chevron-down","fa-chevron-up"),i&&(i.style.display="block",ye()),p.classList.contains("visible")?(ue(pe(),!0),setTimeout(()=>{i&&(i.style.display="none",fe())},300)):i&&(i.style.display="none",fe())):(e.classList.replace("fa-chevron-up","fa-chevron-down"),s&&(s.innerHTML=""))}function ye(){let e=document.getElementById("loading-overlay");e?e.style.display="flex":(e=document.createElement("div"),e.id="loading-overlay",e.style.cssText="\n      position: fixed;\n      top: 0;\n      left: 0;\n      width: 100%;\n      height: 100%;\n      background-color: rgba(255, 255, 255, 0.2);\n      z-index: 999;\n      display: flex;\n      justify-content: center;\n      align-items: center;\n      backdrop-filter: blur(2px);\n    ",document.body.appendChild(e))}function fe(){const e=document.getElementById("loading-overlay");e&&(e.style.display="none")}async function be(){if(/MicroMessenger/i.test(navigator.userAgent))ae("微信浏览器不支持此功能，请在浏览器中打开网页导出数据。","warning");else{if("undefined"==typeof XLSX)try{if(await async function(){try{const e=document.createElement("script");return e.src="https://cdn.bootcdn.net/ajax/libs/xlsx/0.18.5/xlsx.full.min.js",new Promise((t,n)=>{e.onload=()=>t(window.XLSX),e.onerror=()=>n(new Error("XLSX库加载失败")),document.head.appendChild(e)})}catch(e){return ae(`数据导出错误：${e}`,"error"),null}}(),!window.XLSX)throw new Error("XLSX库加载失败")}catch(e){return void ae("导出功能暂时不可用。")}try{const e=pe();if(!e||0===e.length)return void ae("没有数据可导出","warning");const t=XLSX.utils.book_new(),n=e.map(e=>{let t,n,o;"longqiao"===Q?(t=e.amount||0,n=e.sales||"--",o=e.cost||0):(t=(e.quantity||0)*(e.unit_price||0),n=e.warehouse||"--",o=e.unit_price||0);const a={"日期":e.sale_date||"--"};if("longqiao"===Q?a["客户名称"]=e.customer||"--":a["商品ID"]=e.product_id||"--",a["商品名称"]=e.product_name||"--",a["品牌"]=e.brand||"--","longqiao"===Q?a["销售人员"]=n:a["仓库"]=n,a["销量"]=e.quantity||0,"longqiao"===Q?a["成本"]=o:a["单价"]=o,a["金额"]=t,"longqiao"===Q){const t=(e.amount||0)-(e.cost||0);a["毛利"]=t}return a}),o=XLSX.utils.json_to_sheet(n);XLSX.utils.book_append_sheet(t,o,"销售记录");const a=`${"longqiao"===Q?"隆桥仓库":"多多买菜"}_销售记录_${ee}_${te}.xlsx`;XLSX.writeFile(t,a),ae("数据导出成功","success")}catch(e){ae(`导出失败: ${e.message}`,"error")}}}function ve(){let e;t=flatpickr(n,{mode:"range",dateFormat:"Y-m-d",static:!0,onChange:function(e){2===e.length&&l()}}),t&&oe();const l=()=>{clearTimeout(e),e=setTimeout(()=>{ce().then(()=>{de()}).catch(console.error)},500)};ce().then(()=>{o.addEventListener("click",de),a.addEventListener("click",me),document.getElementById("toggleDetails").addEventListener("click",ge),document.getElementById("exportDetails").addEventListener("click",be),de()}).catch(e=>{console.error("初始化失败:",e),i.innerHTML=`\n        <div style="text-align: center; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">\n          <div style="color: #e53e3e; font-size: 3rem; margin-bottom: 1rem;">⚠️</div>\n          <p style="font-size: 1.2rem; margin-bottom: 0.5rem;">初始化失败</p>\n          <p>${e.message}</p>\n        </div>\n      `,i.style.display="block"}),document.addEventListener("click",e=>{m.contains(e.target)||g.contains(e.target)||y.contains(e.target)||f.contains(e.target)||b.contains(e.target)||v.contains(e.target)||w.contains(e.target)||E.contains(e.target)||ie()},!0),document.querySelectorAll(".select-box").forEach(e=>{e.addEventListener("click",t=>{const n=t.target.closest(".tag-remove");if(!n)return;t.stopPropagation(),t.preventDefault();const o=n.closest(".tag"),a=e.id,l=o.dataset.value;if("warehouseSelector"===a){const e=g.querySelector(`input[value="${l}"]`);if(e){e.checked=!1;const t=new Event("change",{bubbles:!0});e.dispatchEvent(t)}}else if("brandSelector"===a){const e=f.querySelector(`input[value="${l}"]`);if(e){e.checked=!1;const t=new Event("change",{bubbles:!0});e.dispatchEvent(t)}}else if("productSelector"===a){const e=v.querySelector(`input[value="${l}"]`);if(e){e.checked=!1;const t=new Event("change",{bubbles:!0});e.dispatchEvent(t)}}else if("customerSelector"===a){const e=E.querySelector(`input[value="${l}"]`);if(e){e.checked=!1;const t=new Event("change",{bubbles:!0});e.dispatchEvent(t)}}})}),window.addEventListener("scroll",()=>{ie()}),window.addEventListener("resize",()=>{if(Y){const e=Y.previousElementSibling;e&&("warehouseSelector"===e.id?z.positionDropdown():"brandSelector"===e.id?X.positionDropdown():"productSelector"===e.id?P.positionDropdown():"customerSelector"===e.id&&j.positionDropdown())}})}document.addEventListener("DOMContentLoaded",async()=>{if(!e)return ae("错误: Supabase客户端未正确初始化"),o.disabled=!0,o.textContent="系统未初始化",o.style.background="#e53e3e",o.style.cursor="not-allowed",i.innerHTML='<p style="color: #e53e3e; padding: 1rem;">系统初始化失败，请刷新页面</p>',void(i.style.display="block");const t=await async function(){if(!e)return!1;try{const{data:{user:t},error:n}=await e.auth.getUser();if(t){Z=t;const e=t.email.split("@")[0],n={162004332:"系统管理员",rickyone:"数据管理员",13762405681:"王英",ksf2025:"康师傅",pepsi_cola:"百事可乐",coca_cola:"可口可乐",15096086678:"娟子"}[e]||e;return F.textContent=n,V.style.display="block",C.style.display="none",L.style.display="block",ae(`欢迎 ${n}！`,"success"),!0}return V.style.display="none",C.style.display="block",!1}catch(e){return ae(`用户认证发生错误: ${e}`,"error"),!1}}();document.getElementById("switchWarehouseBtn").addEventListener("click",le),function(){A&&A.addEventListener("click",e=>{e.stopPropagation(),H.style.display="block"===H.style.display?"none":"block"});document.addEventListener("click",e=>{H&&"block"===H.style.display&&!A.contains(e.target)&&(H.style.display="none")}),O&&O.addEventListener("click",async()=>{try{const{error:t}=await e.auth.signOut();if(t)return void ae(`退出登录失败: ${t.message}`,"error");ae("已成功退出登录","success"),setTimeout(()=>{window.location.reload()},500)}catch(e){ae("退出登录时发生错误","error")}})}(),t?ve():(D.forEach(e=>{e.addEventListener("click",()=>{const t=e.getAttribute("data-tab");D.forEach(e=>e.classList.remove("active")),e.classList.add("active"),q.classList.remove("active"),_.classList.remove("active"),"login"===t?(q.classList.add("active"),q.style.display="block",_.style.display="none"):(_.classList.add("active"),_.style.display="block",q.style.display="none")})}),I.addEventListener("click",async()=>{const t=x.value,n=$.value;if(!t||!n)return void ae("请输入邮箱和密码","warning");const{data:o,error:a}=await e.auth.signInWithPassword({email:t,password:n});if(ae("登录成功！","success"),a)return void ae("登录失败: 请检查用户名或密码是否正确！","error");Z=o.user;const l=Z.email.split("@")[0],s={162004332:"系统管理员",rickyone:"数据管理员",13762405681:"王英",ksf2025:"康师傅",pepsi_cola:"百事可乐",coca_cola:"可口可乐",15096086678:"娟子"}[l]||l;F.textContent=s,V.style.display="block",C.style.display="none",L.style.display="block",ae(`欢迎 ${s}！`,"success"),ve()}),$&&$.addEventListener("keypress",function(e){"Enter"===e.key&&(e.preventDefault(),I.click())}),M.addEventListener("click",async()=>{const t=S.value,n=k.value,o=B.value;if(!t||!n)return void ae("请输入邮箱和密码","warning");const a={email:t,password:n,options:{data:{}}};o&&(a.phone=o);try{const{data:n,error:o}=await e.auth.signUp(a);if(o)return void ae("注册失败: 该功能被禁止，请与管理员联系！","error");ae("注册成功! 请检查您的邮箱进行验证","success"),D.forEach(e=>e.classList.remove("active")),document.querySelector('.auth-tab[data-tab="login"]').classList.add("active"),q.classList.add("active"),q.style.display="block",_.style.display="none",x.value=t}catch(e){ae(`注册异常: ${e.message}`,"error")}}),T.addEventListener("click",async t=>{t.preventDefault();const n=x.value;if(!n)return void ae("请输入您的邮箱","warning");const{data:o,error:a}=await e.auth.resetPasswordForEmail(n,{redirectTo:window.location.href});a?ae(`发送重置邮件失败: ${a.message}`,"error"):ae("密码重置邮件已发送，请检查您的邮箱","success")}))});
+// ============== 1. 初始化部分 ==============
+// Supabase客户端初始化
+const SUPABASE_URL = 'https://iglmqwpagzjadwauvchh.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlnbG1xd3BhZ3pqYWR3YXV2Y2hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4ODk4NDAsImV4cCI6MjA2NjQ2NTg0MH0.Mtiwp31mJvbLRTotbrb4_DobjjpM4kg9f4-G8oWz85E';
+
+let supabaseClient;
+let flatpickrInstance; // 全局Flatpickr实例
+try {
+  supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+} catch (error) {
+  showRoundedAlert('系统初始化失败，请刷新页面或联系管理员', 'error'); // 替换alert
+}
+
+// ============== 2. DOM元素引用 ==============
+const dateRangePicker = document.getElementById('dateRangePicker'); // 日期范围选择器
+const queryBtn = document.getElementById('queryBtn');
+const clearBtn = document.getElementById('clearBtn');
+const summaryTable = document.getElementById('summaryTable').querySelector('tbody');
+const detailTable = document.getElementById('detailTable').querySelector('tbody');
+const loadingEl = document.getElementById('loading');
+const totalQuantityEl = document.getElementById('totalQuantity');
+const totalAmountEl = document.getElementById('totalAmount');
+const totalProductsEl = document.getElementById('totalProducts');
+const totalBrandsEl = document.getElementById('totalBrands');
+const toggleDetails = document.getElementById('toggleDetails');
+const detailSection = document.getElementById('detailSection');
+const totalProfitEl = document.getElementById('totalProfit'); //毛利
+const switchWarehouseBtn = document.getElementById('switchWarehouseBtn'); // 切换仓库按钮
+
+// 多选下拉框元素
+const warehouseSelector = document.getElementById('warehouseSelector');
+const warehouseOptions = document.getElementById('warehouseOptions');
+const brandSelector = document.getElementById('brandSelector');
+const brandOptions = document.getElementById('brandOptions');
+const productSelector = document.getElementById('productSelector');
+const productOptions = document.getElementById('productOptions');
+const customerSelector = document.getElementById('customerSelector');
+const customerOptions = document.getElementById('customerOptions');
+
+// 添加认证相关的DOM引用
+const authContainer = document.getElementById('authContainer');
+const appContainer = document.getElementById('appContainer');
+const loginForm = document.getElementById('loginForm');
+const registerForm = document.getElementById('registerForm');
+const loginEmail = document.getElementById('loginEmail');
+const loginPassword = document.getElementById('loginPassword');
+const registerEmail = document.getElementById('registerEmail');
+const registerPassword = document.getElementById('registerPassword');
+const registerPhone = document.getElementById('registerPhone');
+const loginBtn = document.getElementById('loginBtn');
+const registerBtn = document.getElementById('registerBtn');
+const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+const authTabs = document.querySelectorAll('.auth-tab');
+
+// 添加用户状态相关的DOM引用
+const userStatus = document.getElementById('userStatus');
+const userInfo = document.getElementById('userInfo');
+const userName = document.getElementById('userName');
+const userMenu = document.getElementById('userMenu');
+const logoutBtn = document.getElementById('logoutBtn');
+
+// ============== 3. 全局状态 ==============
+let allWarehouses = [];
+let allBrands = [];
+let allProductsData = [];
+let brandMap = {};
+let currentOpenDropdown = null;
+let selectedProducts = []; 
+let user = null; // 全局用户状态
+let currentWarehouse = 'default'; // 'default' 或 'longqiao'
+let allSalesPersons = []; // 销售人员列表
+let allCustomers = []; // 新增：客户列表
+let salesRecords = []; // 存储销售记录
+let startDateStr = ''; // 全局开始日期字符串
+let endDateStr = ''; // 全局结束日期字符串
+
+// ============== 4. 工具函数 ==============
+// 数字格式化
+function formatNumber(num) {
+  if (typeof num !== 'number') return '0';
+  return num.toLocaleString('zh-CN', { 
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2
+  });
+}
+
+// 设置默认日期范围
+function setDefaultDates() {
+  const endDate = new Date();
+  const startDate = new Date();
+  
+  // 检查今天是否是每月1号
+  if (endDate.getDate() === 1) {
+    // 设置为上个月的1号到上个月最后一天
+    startDate.setMonth(startDate.getMonth() - 1);
+    startDate.setDate(1);
+    
+    endDate.setMonth(endDate.getMonth() - 1);
+    endDate.setDate(new Date(endDate.getFullYear(), endDate.getMonth() + 1, 0).getDate());
+  } else {
+    // 默认设置为当月1号到昨天
+    startDate.setDate(1);
+    endDate.setDate(endDate.getDate() - 1);
+  }
+  
+  // 设置Flatpickr的值
+  flatpickrInstance.setDate([startDate, endDate]);
+}
+
+// **** 认证函数，用户状态显示****
+async function initAuth() {
+  if (!supabaseClient) {
+    return false;
+  }
+
+  try {
+    const { data: { user: currentUser }, error } = await supabaseClient.auth.getUser();
+
+    if (currentUser) {
+      user = currentUser;
+      // 显示用户状态 - 根据邮箱前缀映射到用户名
+      const emailPrefix = currentUser.email.split('@')[0]; // 获取邮箱前缀
+      const usernameMap = {
+        '162004332': '系统管理员',
+        'rickyone': '数据管理员',
+        '13762405681': '王英',
+        'ksf2025': '康师傅',
+        'pepsi_cola': '百事可乐',
+        'coca_cola': '可口可乐',
+        '15096086678': '娟子'
+      };
+      // 如果邮箱前缀在映射表中，则使用映射的用户名，否则使用邮箱前缀
+      const displayName = usernameMap[emailPrefix] || emailPrefix;
+      userName.textContent = displayName;
+
+      userStatus.style.display = 'block';
+      authContainer.style.display = 'none';
+      appContainer.style.display = 'block';
+      showRoundedAlert(`欢迎 ${displayName}！`, 'success');
+      return true;
+    } else {
+      userStatus.style.display = 'none';
+      authContainer.style.display = 'block';
+      return false;
+    }
+  } catch (error) {
+    showRoundedAlert(`用户认证发生错误: ${error}`,'error');
+    return false;
+  }
+}
+
+// **** 弹窗提示函数 ****
+function showRoundedAlert(message, type = 'error') {
+  // 移除已有的提示容器
+  const existingAlert = document.getElementById('custom-alert');
+  if (existingAlert) existingAlert.remove();
+  
+  // 创建提示容器
+  const alertContainer = document.createElement('div');
+  alertContainer.id = 'custom-alert';
+  alertContainer.className = `rounded-alert ${type}`;
+  
+  // 创建内容
+  alertContainer.innerHTML = `
+    <div class="alert-content">
+      <i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'check-circle'}"></i>
+      <span>${message}</span>
+    </div>
+  `;
+  
+  // 添加到DOM
+  document.body.appendChild(alertContainer);
+  
+  // 计算水平居中位置
+  const containerWidth = alertContainer.offsetWidth;
+  const leftPosition = (window.innerWidth - containerWidth) / 2;
+  
+  // 设置位置
+  alertContainer.style.top = '20px';
+  alertContainer.style.left = `${leftPosition}px`;
+  
+  // 自动消失
+  setTimeout(() => {
+    alertContainer.classList.add('fade-out');
+    setTimeout(() => alertContainer.remove(), 300);
+  }, 2000);
+}
+
+// **** 仓库切换功能 ****
+function switchWarehouse() {
+  // +++ 新增：收起详细记录区域 +++
+  if (detailSection.classList.contains('visible')) {
+    detailSection.classList.remove('visible');
+    // 更新图标方向
+    const icon = document.querySelector('#toggleDetails i');
+    icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+  }
+  
+  // 切换仓库状态
+  currentWarehouse = currentWarehouse === 'default' ? 'longqiao' : 'default';
+  
+  // 获取筛选行元素
+  const filtersRow = document.querySelector('.filters-row');
+  
+  // 根据仓库类型添加/移除样式
+  if (currentWarehouse === 'longqiao') {
+    filtersRow.classList.add('longqiao');
+  } else {
+    filtersRow.classList.remove('longqiao');
+  }
+  
+  // 立即更新UI布局
+  updateUIForWarehouse();  // 位置调整到这里
+  
+  clearPieChart(); // 清除饼图数据  
+  setDefaultDates() // 设置默认日期
+
+  // 重新加载筛选选项
+  loadFilterOptions().then(() => {
+    // 重置下拉框选择
+    warehouseMultiSelect.reset();
+    brandMultiSelect.reset();
+    productMultiSelect.reset();
+    if (customerMultiSelect) { // 重置客户选择
+      customerMultiSelect.reset();
+    }    
+    updateDetailTableHeader(); // 更新表头
+    loadData();// 重新加载数据
+    handleResponsiveLayout(); // 添加响应式处理
+  });
+}
+
+// ****更新UI****
+function updateUIForWarehouse() {
+  const header = document.querySelector('header h1');
+  const profitCard = document.getElementById('profitCard');
+  const totalProductsCard = document.getElementById('totalProducts').closest('.stat-card'); // 获取商品种类卡片
+  
+  if (currentWarehouse === 'longqiao') {
+    header.innerHTML = `<img src="icon64.png" alt="应用图标" style="border-radius: 8px; filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.5));"> 隆桥仓库销售数据查询系统`;
+    document.querySelector('.filter-group label:has(i.fas.fa-warehouse)').innerHTML = `<i class="fas fa-user"></i> 销售人员`;
+    profitCard.style.display = 'block';
+  } else {
+    header.innerHTML = `<img src="icon64.png" alt="应用图标" style="border-radius: 8px; filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.5));"> 多多买菜销售数据查询系统`;
+    document.querySelector('.filter-group label:has(i.fas.fa-user)').innerHTML = `<i class="fas fa-warehouse"></i> 仓库`;
+    profitCard.style.display = 'none';
+    // 显示商品种类卡片
+    totalProductsCard.style.display = 'block';
+  }
+  
+  // 客户筛选框显示控制
+  const customerFilterGroup = document.getElementById('customerFilterGroup');
+  if (customerFilterGroup) {
+    customerFilterGroup.style.display = currentWarehouse === 'longqiao' ? 'block' : 'none';
+  }  
+}
+
+// ***更新详细记录表头****
+function updateDetailTableHeader() {
+  const thead = document.querySelector('#detailTable thead');
+  let headerHTML = `
+    <tr>
+      <th>日期</th>
+      <th>${currentWarehouse === 'longqiao' ? '客户名称' : '商品ID'}</th> 
+      <th>商品名称</th>
+      <th>品牌</th>
+      <th>${currentWarehouse === 'longqiao' ? '销售人员' : '仓库'}</th>
+      <th>销量</th>
+      <th>${currentWarehouse === 'longqiao' ? '成本' : '单价'}</th>
+      <th>金额</th>
+  `;
+  
+  if (currentWarehouse === 'longqiao') {
+    headerHTML += `<th>毛利</th>`;
+  }
+  
+  headerHTML += `</tr>`;
+  
+  thead.innerHTML = headerHTML;
+}
+
+// ============== 5. 下拉框管理 （类+全局事件） ==============
+class MultiSelect {
+  constructor(selector, optionsContainer, placeholder) {
+    this.selector = selector;
+    this.optionsContainer = optionsContainer;
+    this.placeholder = placeholder;
+    this.selectedValues = [];
+    this.allOptions = [];
+    this.clearBtn = selector.querySelector('.clear-btn');
+    
+    // 初始化事件
+    this.initEvents();
+  }
+
+  initEvents() {
+    // 点击选择框显示/隐藏选项
+    this.selector.addEventListener('click', (e) => this.toggleDropdown(e));
+    
+    // 清除按钮事件
+    this.clearBtn.addEventListener('click', (e) => this.clearSelection(e));
+    
+    // 选项容器事件委托
+    this.optionsContainer.addEventListener('change', (e) => this.handleOptionChange(e));
+    
+    // 鼠标事件保持下拉框状态
+    this.optionsContainer.addEventListener('mouseenter', () => // 鼠标移入时保持下拉框状态
+      this.optionsContainer.classList.add('active'));
+    this.optionsContainer.addEventListener('mouseleave', () =>  // 鼠标移出时取消下拉框状态
+      this.optionsContainer.classList.remove('active'));
+  }
+
+  toggleDropdown(e) { // 切换下拉框状态
+    // 新增：检查是否点击了标签移除按钮或标签本身
+    if (
+      e.target.classList.contains('tag-remove') || 
+      e.target.classList.contains('tag') ||
+      e.target.closest('.tag-remove') ||
+      e.target.closest('.tag')
+    ) {
+      return; // 如果是标签相关元素，直接返回不处理
+    }   
+
+    e.stopPropagation();
+    
+    // 先关闭所有下拉框（包括当前打开的）
+    closeAllDropdowns();
+    
+    // 然后判断是否需要打开当前下拉框
+    const isOpening = !this.optionsContainer.classList.contains('visible');
+    
+    if (isOpening) {
+      this.optionsContainer.classList.add('visible');
+      currentOpenDropdown = this.optionsContainer;
+      const arrow = this.selector.querySelector('.arrow');
+      arrow.classList.replace('fa-chevron-down', 'fa-chevron-up');
+      this.positionDropdown();
+    }
+  }
+
+  positionDropdown() { // 定位下拉框
+    const rect = this.selector.getBoundingClientRect();
+    const parentRect = this.selector.parentElement.getBoundingClientRect();
+    
+    this.optionsContainer.style.width = `${rect.width}px`;
+    this.optionsContainer.style.left = `${rect.left - parentRect.left}px`;
+    this.optionsContainer.style.top = `${rect.bottom - parentRect.top}px`;
+  }
+
+  clearSelection(e) { // 清空选择
+    e.stopPropagation(); // 阻止事件冒泡
+    this.selectedValues = [];
+    this.updateDisplay();
+    
+    // 取消所有复选框
+    const checkboxes = this.optionsContainer.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => checkbox.checked = false);
+    
+    // 特殊处理品牌和商品下拉
+    if (this.selector.id === 'brandSelector') {
+      selectedProducts = [];
+      filterProductsByBrand();
+    } else if (this.selector.id === 'productSelector') {
+      selectedProducts = [];
+      filterProductsByBrand();
+    }
+  }
+
+  handleOptionChange(e) { // 添加一个方法来处理选项的更改
+    if (!e.target.matches('input[type="checkbox"]')) return; // 确保点击的是复选框
+    
+    const checkbox = e.target;
+    const value = checkbox.value;
+    
+    // 全选处理
+    if (checkbox.id.startsWith('selectAll')) {
+      const checkboxes = this.optionsContainer.querySelectorAll(
+        `input[type="checkbox"]:not([id="${checkbox.id}"])`
+      );
+      
+      if (checkbox.checked) {
+        this.selectedValues = this.allOptions.map(opt => opt.value);
+        checkboxes.forEach(cb => cb.checked = true);
+      } else {
+        this.selectedValues = [];
+        checkboxes.forEach(cb => cb.checked = false);
+      }
+    } 
+    // 单个选项处理
+    else {
+      if (checkbox.checked) {
+        if (!this.selectedValues.includes(value)) {
+          this.selectedValues.push(value);
+        }
+      } else {
+        const index = this.selectedValues.indexOf(value);
+        if (index > -1) this.selectedValues.splice(index, 1);
+      }
+      
+      // 更新全选状态
+      this.updateSelectAllState();
+    }
+    
+    this.updateDisplay();
+    
+    // 品牌下拉特殊处理
+    if (this.selector.id === 'brandSelector') {
+      selectedProducts = [];
+      filterProductsByBrand();
+      if (currentWarehouse === 'longqiao') { // 隆桥仓库模式下根据品牌过滤客户
+        filterCustomersByBrand();
+      }      
+    }
+
+    // 新增：仓库选择变化时，重新加载品牌和商品选项
+    if (this.selector.id === 'warehouseSelector') {
+      reloadBrandAndProductOptions();
+    }    
+  }
+
+  updateDisplay() { // 更新显示
+    const placeholderEl = this.selector.querySelector('.placeholder');
+    const displayEl = this.selector.querySelector('.selected-display');
+    const arrow = this.selector.querySelector('.arrow');
+    
+    displayEl.innerHTML = '';
+    
+    if (this.selectedValues.length === 0) {
+      placeholderEl.textContent = `全部${this.placeholder}`;
+      placeholderEl.style.display = 'block';
+      displayEl.style.display = 'none';
+      arrow.style.display = 'block';
+      arrow.classList.replace('fa-times', 'fa-chevron-down');
+      this.clearBtn.style.display = 'none';
+      return;
+    }
+    
+    placeholderEl.style.display = 'none';
+    displayEl.style.display = 'flex';
+    
+    // 显示前5个选中项
+    const maxDisplay = 5;
+    const displayValues = this.selectedValues.slice(0, maxDisplay);
+    const remainingCount = this.selectedValues.length - maxDisplay;
+    
+    displayValues.forEach(value => {
+      const option = this.allOptions.find(opt => opt.value === value);
+      if (!option) return;
+
+      // 使用insertAdjacentHTML方法能被父元素监听
+      displayEl.insertAdjacentHTML('beforeend', `
+        <div class='tag' data-value='${value}'>
+          ${option.label}
+          <span class='tag-remove'><i class="far fa-circle-xmark"></i></span> 
+        </div>
+      `);      
+    });
+    
+    // 显示剩余项提示
+    if (remainingCount > 0) {
+      const moreTag = document.createElement('div');
+      moreTag.className = 'tag more-tag';
+      moreTag.textContent = `...等${this.selectedValues.length}项`;
+      displayEl.appendChild(moreTag);
+    }
+    
+    // 更新图标状态
+    arrow.style.display = 'none';
+    this.clearBtn.style.display = 'block';
+  }
+
+  // 新增：重置选择
+  reset() {
+    this.selectedValues = [];
+    this.updateDisplay();
+    
+    // 取消所有复选框
+    const checkboxes = this.optionsContainer.querySelectorAll(
+      'input[type="checkbox"]'
+    );
+    checkboxes.forEach(checkbox => (checkbox.checked = false));
+  }
+
+  // 新增：更新全选状态
+  updateSelectAllState() {
+    const selectAll = this.optionsContainer.querySelector(
+      `input[id^="selectAll"]`
+    );
+    if (selectAll) {
+      const checkboxes = this.optionsContainer.querySelectorAll(
+        `input[type="checkbox"]:not([id^="selectAll"])`
+      );
+      selectAll.checked = checkboxes.length > 0 && 
+        Array.from(checkboxes).every(cb => cb.checked);
+    }
+  }
+
+  setOptions(options) {
+    this.allOptions = options;
+    this.renderOptions();
+    this.updateDisplay();
+  }
+
+  renderOptions() { // 添加全选选项
+    this.optionsContainer.innerHTML = '';
+    
+    // 添加全选选项
+    const selectAllOption = document.createElement('div');
+    selectAllOption.className = 'option';
+    selectAllOption.innerHTML = `
+      <input type="checkbox" id="selectAll${this.selector.id}">
+      <label for="selectAll${this.selector.id}">全选</label>
+    `;
+    this.optionsContainer.appendChild(selectAllOption);
+    
+    // 添加普通选项
+    this.allOptions.forEach(option => {
+      const optionEl = document.createElement('div');
+      optionEl.className = 'option';
+      optionEl.innerHTML = `
+        <input type="checkbox" id="${this.selector.id}-${option.value}" 
+              value="${option.value}" ${this.selectedValues.includes(option.value) ? 'checked' : ''}>
+        <label for="${this.selector.id}-${option.value}">${option.label}</label>
+      `;
+      this.optionsContainer.appendChild(optionEl);
+    });
+  }
+}
+// 新增：关闭所有下拉框函数
+function closeAllDropdowns() {
+  document.querySelectorAll('.options-container').forEach(dropdown => {
+    dropdown.classList.remove('visible');
+    const prevArrow = dropdown.previousElementSibling.querySelector('.arrow');
+    if (prevArrow) {
+      prevArrow.classList.replace('fa-chevron-up', 'fa-chevron-down');
+    }
+  });
+  currentOpenDropdown = null;
+}
+
+// 全局下拉框实例
+let warehouseMultiSelect, brandMultiSelect, productMultiSelect, customerMultiSelect;
+
+// ============== 6. 仓库/人员、品牌与商品过滤 ==============
+// ****根据品牌过滤商品选项****
+function filterProductsByBrand() {
+  // 清空商品选项容器
+  productOptions.innerHTML = '';
+
+  // 添加全选选项
+  const productSelectAllOption = document.createElement('div');
+  productSelectAllOption.className = 'option';
+  productSelectAllOption.id = 'productSelectAll';
+  productSelectAllOption.innerHTML = `
+    <input type="checkbox" id="selectAllProducts">
+    <label for="selectAllProducts">全选</label>
+  `;
+  productOptions.appendChild(productSelectAllOption);
+
+  let filteredProducts = [];
+  let displayBrandCount = brandMultiSelect.selectedValues.length;
+
+  // 根据品牌筛选商品
+  if (displayBrandCount > 0) {
+    filteredProducts = allProductsData.filter(p => 
+      brandMap[p.product_id] && brandMultiSelect.selectedValues.includes(brandMap[p.product_id])
+    );
+  } else {
+    filteredProducts = allProductsData;
+    displayBrandCount = '全部';
+  }
+
+  // 重置商品选中状态
+  productMultiSelect.selectedValues = [];
+  
+  // 添加商品选项
+  filteredProducts.forEach(product => {
+    const option = document.createElement('div');
+    option.className = 'option';
+    const isSelected = productMultiSelect.selectedValues.includes(product.product_id);
+    
+    option.innerHTML = `
+      <input type="checkbox" id="product-${product.product_id}" 
+             value="${product.product_id}" ${isSelected ? 'checked' : ''}>
+      <label for="product-${product.product_id}">${product.product_name}</label>
+    `;
+    productOptions.appendChild(option);
+  });
+
+  // 更新商品下拉框文本
+  const placeholderEl = productSelector.querySelector('.placeholder');
+  placeholderEl.textContent = brandMultiSelect.selectedValues.length === 0 
+    ? '全部商品' 
+    : `已筛选${displayBrandCount}个品牌`;
+  
+  // 更新商品下拉框选项
+  productMultiSelect.setOptions(
+    filteredProducts.map(p => ({ 
+      value: p.product_id, 
+      label: p.product_name 
+    })).sort((a, b) => a.label.localeCompare(b.label)) // 按A-Z排序
+  );
+}
+
+// **** 根据品牌过滤客户函数 **** 
+function filterCustomersByBrand() { 
+  const selectedBrands = brandMultiSelect.selectedValues;
+  const selectedSales = warehouseMultiSelect.selectedValues; // 获取选中的销售人员
+  
+  // 使用全局 salesRecords 作为基础
+  let filteredCustomers = [];
+  
+  if (selectedBrands.length > 0 || selectedSales.length > 0) {
+    filteredCustomers = allCustomers.filter(customer => {
+      // 检查该客户是否有匹配的记录
+      return salesRecords.some(record => 
+        record.customer === customer && 
+        // 同时匹配品牌和销售人员
+        (selectedBrands.length === 0 || selectedBrands.includes(record.brand)) &&
+        (selectedSales.length === 0 || selectedSales.includes(record.sales))
+      );
+    });
+  } else {
+    // 没有品牌选中时显示所有客户
+    filteredCustomers = allCustomers;
+  }
+  
+  // 更新客户下拉框选项
+  customerMultiSelect.setOptions(
+    filteredCustomers.map(c => ({ value: c, label: c }))
+      .sort((a, b) => a.label.localeCompare(b.label))
+  );
+  
+  // 重置客户选择状态
+  if (customerMultiSelect) {
+    customerMultiSelect.reset();
+  }
+}
+
+// ****按仓库/人员，重新加载品牌和商品选项****
+function reloadBrandAndProductOptions() {
+  // 直接使用全局的 salesRecords 数据
+  if (!salesRecords || salesRecords.length === 0) {
+    return;
+  }
+
+  try {
+    // === 新增：按仓库筛选数据 ===
+    let filteredRecords = [...salesRecords];
+    
+    //  按仓库类型过滤
+    if (currentWarehouse === 'longqiao') {
+      // 隆桥仓库：按销售人员过滤
+      if (warehouseMultiSelect.selectedValues.length > 0) {
+        filteredRecords = filteredRecords.filter(record => 
+          warehouseMultiSelect.selectedValues.includes(record.sales)
+        );
+      }
+    } else {
+      // 多多仓库：按仓库名称过滤
+      if (warehouseMultiSelect.selectedValues.length > 0) {
+        filteredRecords = filteredRecords.filter(record => 
+          warehouseMultiSelect.selectedValues.includes(record.warehouse)
+        );
+      }
+    }
+
+    // === 处理商品和品牌数据 ===
+    const uniqueProducts = new Map();
+    brandMap = {}; // 重置品牌映射
+    
+    filteredRecords.forEach(record => {
+      // 仅处理有商品ID的记录
+      if (record.product_id) {
+        // 存储商品信息
+        if (!uniqueProducts.has(record.product_id)) {
+          uniqueProducts.set(record.product_id, {
+            product_id: record.product_id,
+            product_name: record.product_name || '未知商品'
+          });
+        }
+        
+        // 存储品牌映射（包含默认值）
+        brandMap[record.product_id] = record.brand || '无品牌';
+      }
+    });
+    
+    allProductsData = Array.from(uniqueProducts.values());
+    allBrands = [...new Set(Object.values(brandMap))].sort();
+
+    // 更新品牌下拉框选项
+    brandMultiSelect.setOptions(
+      allBrands.map(brand => ({ value: brand, label: brand }))
+        .sort((a, b) => a.label.localeCompare(b.label)) // 按A-Z排序
+    );
+    
+    // 更新商品下拉框选项（根据当前品牌选择过滤）
+    filterProductsByBrand();
+    
+    // === 新增：隆桥仓库模式下更新客户选项 ===
+    if (currentWarehouse === 'longqiao') {
+      // 获取唯一客户列表
+      const uniqueCustomers = [...new Set(filteredRecords
+        .map(record => record.customer)
+        .filter(c => c) // 过滤空值
+      )].sort();
+      
+      // 更新客户下拉框
+      customerMultiSelect.setOptions(
+        uniqueCustomers.map(customer => ({ 
+          value: customer, 
+          label: customer 
+        })).sort((a, b) => a.label.localeCompare(b.label)) // 按A-Z排序
+      );
+      if (customerMultiSelect) {   // 重置客户选择状态 
+        customerMultiSelect.reset();
+      } 
+      if (brandMultiSelect) {   // 重置品牌选择状态 
+        brandMultiSelect.reset();
+      }            
+    }
+    
+  } catch (error) {
+    showRoundedAlert(`重新加载品牌和商品选项失败: ${error}`,'error');
+  }
+}
+
+// ============== 7. 数据加载与处理 ==============
+// ****通用数据获取函数（支持分页）*****
+async function fetchRecords(tableName, fields, conditions = {}) {
+  if (!supabaseClient) {
+    throw new Error('Supabase客户端未初始化');
+  }
+
+  try {
+    const batchSize = 10000; // 每批次获取的记录数
+    let allData = []; // 存储所有数据
+    let from = 0; // 起始位置
+    let hasMore = true; // 是否还有更多数据
+
+    // 构建基础查询
+    let baseQuery = supabaseClient
+      .from(tableName)
+      .select(fields.join(','));
+
+    // 应用查询条件
+    Object.entries(conditions).forEach(([key, value]) => {
+      if (Array.isArray(value)) {
+        baseQuery = baseQuery.in(key, value);
+      } else if (value !== undefined) {
+        if (typeof value === 'object' && value.gte && value.lte) {
+          baseQuery = baseQuery.gte(key, value.gte).lte(key, value.lte);
+        } else {
+          baseQuery = baseQuery.eq(key, value);
+        }
+      }
+    });
+
+    // 分批次获取所有数据
+    while (hasMore) {
+      // 创建当前批次的查询（复制基础查询并添加范围限制）
+      let query = baseQuery.range(from, from + batchSize - 1);
+      
+      const { data, error } = await query;
+      
+      if (error) throw error;
+      
+      // 添加当前批次的数据
+      if (data && data.length > 0) {
+        allData = [...allData, ...data];
+      }
+      
+      // 检查是否还有更多数据
+      hasMore = data.length === batchSize;
+      from += batchSize;
+    }
+    return allData;
+  } catch (error) {
+    showRoundedAlert(`从 ${tableName} 获取数据失败:${error}`,'error');
+    throw error;
+  }
+}
+
+// 加载筛选选项函数，在加载完成后检查品牌数量并自动应用单品牌逻辑
+async function loadFilterOptions() {
+  try {
+    // 显示悬浮加载动画
+    loadingEl.style.display = 'block';
+    showLoadingOverlay(); // 添加遮罩层
+        
+  // 获取当前日期范围
+  const selectedDates = flatpickrInstance.selectedDates;
+  const startDate = selectedDates[0];
+  const endDate = selectedDates[1];
+  
+  // 格式化为本地日期YYYY-MM-DD，避免UTC时间误差
+  const formatDate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+  
+  // 使用格式化的日期
+  startDateStr = formatDate(startDate);
+  endDateStr = formatDate(endDate);
+    
+    // 根据当前仓库选择不同的查询表
+    const table = currentWarehouse === 'longqiao' ? 'longqiao_records' : 'sales_records';
+    // 设置查询字段（所有）
+    const fields = currentWarehouse === 'longqiao'
+      ? ['sale_date', 'product_id', 'product_name', 'sales', 'quantity', 'customer', 'amount', 'cost', 'brand']
+      : ['sale_date', 'product_id', 'product_name', 'warehouse', 'quantity', 'unit_price', 'brand', 'pieces'];
+
+    // 构建查询条件（只查询当前日期范围内的记录）
+    const conditions = {
+      sale_date: { gte: startDateStr, lte: endDateStr }
+    };
+    // 使用通用函数获取数据
+    salesRecords = await fetchRecords(table, fields, conditions);
+    // 处理仓库数据
+    if (salesRecords.length > 0) {
+      const warehouseKey = currentWarehouse === 'longqiao' ? 'sales' : 'warehouse';
+      allWarehouses = [...new Set(salesRecords.map(record => record[warehouseKey]))]
+        .filter(wh => wh) // 过滤掉空值
+        .sort();
+    }
+    
+    // 处理品牌和商品数据
+    brandMap = {};
+    
+    if (salesRecords.length > 0) {
+      const uniqueProducts = new Map();
+    
+      salesRecords.forEach(record => {
+        if (record.product_id && !uniqueProducts.has(record.product_id)) {
+          uniqueProducts.set(record.product_id, {
+            product_id: record.product_id,
+            product_name: record.product_name
+          });
+        }
+        
+        if (record.product_id && record.brand) {
+          brandMap[record.product_id] = record.brand;
+        }
+      });
+      
+      allProductsData = Array.from(uniqueProducts.values());
+      allBrands = [...new Set(salesRecords.map(record => record.brand))]
+        .filter(b => b) // 过滤掉空值
+        .sort();
+    }
+
+    // 处理客户数据（仅隆桥仓库）
+    if (currentWarehouse === 'longqiao' && salesRecords.length > 0) {
+      allCustomers = [...new Set(salesRecords.map(record => record.customer))]
+        .filter(c => c) // 过滤掉空值
+        .sort();
+    }
+ 
+    // 初始化多选下拉框实例
+    warehouseMultiSelect = new MultiSelect(warehouseSelector, warehouseOptions, 
+      currentWarehouse === 'longqiao' ? '销售人员' : '仓库');
+    brandMultiSelect = new MultiSelect(brandSelector, brandOptions, '品牌');
+    productMultiSelect = new MultiSelect(productSelector, productOptions, '商品');
+  
+    // 客户下拉框初始化（无论是否有数据都初始化）
+    customerMultiSelect = new MultiSelect(customerSelector, customerOptions, '客户');
+    customerMultiSelect.setOptions(
+      allCustomers.map(c => ({ value: c, label: c }))
+        .sort((a, b) => a.label.localeCompare(b.label)) // 按A-Z排序      
+    );
+
+    // 设置下拉框选项
+    warehouseMultiSelect.setOptions(
+      allWarehouses.map(wh => ({ value: wh, label: wh }))
+        .sort((a, b) => a.label.localeCompare(b.label)) // 按A-Z排序
+    );
+    
+    brandMultiSelect.setOptions(
+      allBrands.map(brand => ({ value: brand, label: brand }))
+        .sort((a, b) => a.label.localeCompare(b.label)) // 按A-Z排序
+    );
+    
+    // 初始商品选项
+    productMultiSelect.setOptions(
+      allProductsData.map(p => ({ value: p.product_id, label: p.product_name }))
+        .sort((a, b) => a.label.localeCompare(b.label)) // 按A-Z排序
+    );
+    
+    // 新增：检查是否只有一个品牌，如果是则自动应用单品牌逻辑
+    if (currentWarehouse === 'longqiao' && allBrands.length === 1) {
+      // 自动触发单品牌逻辑
+      setTimeout(() => {
+        loadData();
+      }, 0);
+    }
+    
+    return Promise.resolve();
+  } catch (error) {
+    showRoundedAlert(`筛选选项加载失败: ${ error.message}`, 'error');
+    return Promise.reject(error);
+  } finally {
+    // 隐藏加载动画
+    loadingEl.style.display = 'none';
+    hideLoadingOverlay(); // 移除遮罩层
+  } 
+}
+
+// 加载数据
+function loadData() {
+  // +++ 新增：收起详细记录区域 +++
+  if (detailSection.classList.contains('visible')) {
+    detailSection.classList.remove('visible');
+    // 更新图标方向
+    const icon = document.querySelector('#toggleDetails i');
+    icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+  }
+
+  // 清除表格和饼图内容
+  summaryTable.innerHTML = '';
+  detailTable.innerHTML = '';
+  clearPieChart(); 
+
+  try { 
+
+    // 直接使用全局 salesRecords 数据
+    let data = salesRecords; 
+    // 仓库/销售人员过滤
+    if (currentWarehouse === 'longqiao') {
+      if (warehouseMultiSelect.selectedValues.length > 0) {
+        data = data.filter(record => 
+          warehouseMultiSelect.selectedValues.includes(record.sales)
+        );
+      }
+    } else {
+      if (warehouseMultiSelect.selectedValues.length > 0) {
+        data = data.filter(record => 
+          warehouseMultiSelect.selectedValues.includes(record.warehouse)
+        );
+      }
+    }
+    
+    // 品牌过滤
+    if (brandMultiSelect.selectedValues.length > 0) {
+      data = data.filter(record => 
+        brandMultiSelect.selectedValues.includes(record.brand)
+      );
+    }
+    
+    // 商品过滤
+    if (productMultiSelect.selectedValues.length > 0) {
+      data = data.filter(record => 
+        productMultiSelect.selectedValues.includes(record.product_id)
+      );
+    }
+    
+    // 客户过滤（仅隆桥仓库）
+    if (currentWarehouse === 'longqiao' && 
+        customerMultiSelect && 
+        customerMultiSelect.selectedValues.length > 0) {
+      data = data.filter(record => 
+        customerMultiSelect.selectedValues.includes(record.customer)
+      );
+    }
+
+    calculateSummary(data);
+    // 更新详细记录条数但不渲染表格
+    renderDetailTable(data, false);    
+
+  } catch (error) {
+    console.error('查询错误详情:', error);
+    loadingEl.innerHTML = `
+      <div style="text-align: center; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <div style="color: #e53e3e; font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
+        <p style="font-size: 1.2rem; margin-bottom: 0.5rem;">数据加载失败</p>
+        <p>${error.message}</p>
+      </div>
+    `;
+  }
+}
+
+// 渲染详细表格
+function renderDetailTable(data, shouldRender = false) {
+  // 获取显示数据条数的元素
+  const detailCountEl = document.getElementById('detailCount');
+  
+  // 始终更新数据条数显示，无论是否渲染表格
+  if (!data || data.length === 0) {
+    detailCountEl.textContent = '(0条数据)';
+  } else {
+    detailCountEl.textContent = `(${data.length}条)`;
+  }
+  
+  // 如果不需要渲染，直接返回
+  if (!shouldRender) {
+    return;
+  }
+  
+  // 使用 setTimeout 将渲染操作放到下一个事件循环中，确保加载动画能够显示
+  setTimeout(() => {
+    try {
+      const tbody = detailTable;
+      tbody.innerHTML = '';
+
+      // 修改点：按时间从大到小排序
+      if (data && data.length > 0) {
+        data.sort((a, b) => {
+          return new Date(b.sale_date) - new Date(a.sale_date);
+        });
+      }
+
+      if (!data || data.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="${currentWarehouse === 'longqiao' ? 9 : 8}" style="text-align: center; padding: 30px; color: #6c757d;">
+              <i class="fas fa-database" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+              未找到匹配的记录
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      data.forEach(record => {
+        const row = document.createElement('tr');
+        let amount, warehouseField, cost;
+        
+        if (currentWarehouse === 'longqiao') {
+          amount = record.amount || 0;
+          warehouseField = record.sales || '--';
+          cost = record.cost || 0;
+        } else {
+          amount = (record.quantity || 0) * (record.unit_price || 0);
+          warehouseField = record.warehouse || '--';
+          cost = record.unit_price || 0;
+        }
+        
+        // 基础行
+        row.innerHTML = `
+          <td>${record.sale_date || '--'}</td>
+          <td>${ //第二列显示商品ID或客户名称
+            currentWarehouse === 'longqiao' 
+              ? (record.customer || '--')  // 隆桥仓库显示客户名称
+              : (record.product_id || '--') // 其他仓库显示商品ID
+          }</td>
+          <td>${record.product_name || '--'}</td>
+          <td>${record.brand || '--'}</td>
+          <td>${warehouseField}</td>
+          <td>${formatNumber(record.quantity || 0)}</td>
+          <td>${cost}</td>
+          <td>¥${formatNumber(amount)}</td>
+        `;
+        
+        // 隆桥仓库显示利润列
+        if (currentWarehouse === 'longqiao') {
+          const profit = (record.amount || 0) - (record.cost || 0);
+          const profitStyle = profit < 0 ? 'style="color: #e53e3e; font-weight: bold;"' : '';
+          row.innerHTML += `<td ${profitStyle}>¥${formatNumber(profit)}</td>`;
+        }
+        
+        tbody.appendChild(row);
+      });
+    } catch (error) {
+      console.error('渲染详细表格时出错:', error);
+      detailTable.innerHTML = `
+        <tr>
+          <td colspan="${currentWarehouse === 'longqiao' ? 9 : 8}" style="text-align: center; padding: 30px; color: #e53e3e;">
+            <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+            <p>渲染表格时发生错误</p>
+          </td>
+        </tr>
+      `;
+    }
+  }, 0);
+}
+
+// 获取当前筛选后的数据
+function getFilteredData() {
+  // 重新获取当前筛选后的数据
+  let data = salesRecords;
+  
+  // 应用相同的筛选逻辑
+  if (currentWarehouse === 'longqiao') {
+    if (warehouseMultiSelect.selectedValues.length > 0) {
+      data = data.filter(record => 
+        warehouseMultiSelect.selectedValues.includes(record.sales)
+      );
+    }
+  } else {
+    if (warehouseMultiSelect.selectedValues.length > 0) {
+      data = data.filter(record => 
+        warehouseMultiSelect.selectedValues.includes(record.warehouse)
+      );
+    }
+  }
+  
+  if (brandMultiSelect.selectedValues.length > 0) {
+    data = data.filter(record => 
+      brandMultiSelect.selectedValues.includes(record.brand)
+    );
+  }
+  
+  if (productMultiSelect.selectedValues.length > 0) {
+    data = data.filter(record => 
+      productMultiSelect.selectedValues.includes(record.product_id)
+    );
+  }
+  
+  if (currentWarehouse === 'longqiao' && 
+      customerMultiSelect && 
+      customerMultiSelect.selectedValues.length > 0) {
+    data = data.filter(record => 
+      customerMultiSelect.selectedValues.includes(record.customer)
+    );
+  }
+  
+  return data;
+}
+
+// 显示详细记录表格
+function showDetailTable() {
+  // 显示悬浮加载动画
+  if (loadingEl) {
+    loadingEl.style.display = 'block';
+    showLoadingOverlay(); // 添加遮罩层
+  }
+
+  // 只有当详细记录区域可见时才渲染表格
+  if (detailSection.classList.contains('visible')) {
+    // 获取筛选后的数据
+    const data = getFilteredData();
+    
+    // 渲染表格
+    renderDetailTable(data, true);
+    
+    // 在渲染完成后隐藏加载动画
+    setTimeout(() => {
+      if (loadingEl) {
+        loadingEl.style.display = 'none';
+        hideLoadingOverlay(); // 移除遮罩层
+      }
+    }, 300);
+  } else {
+    // 如果详细记录区域不显示，直接隐藏加载动画
+    if (loadingEl) {
+      loadingEl.style.display = 'none';
+      hideLoadingOverlay(); // 移除遮罩层
+    }
+  }
+}
+
+// 修改 calculateSummary 函数中的汇总逻辑
+function calculateSummary(data) {
+  const summaryTableEl = document.getElementById('summaryTable');
+  let thead = summaryTableEl.querySelector('thead');
+  if (!thead) {
+    thead = document.createElement('thead');
+    summaryTableEl.insertBefore(thead, summaryTableEl.firstChild);
+  }
+
+  // 根据仓库类型设置表头
+  let headerHTML = `<tr><th>品牌</th><th>总件数</th><th>总金额</th>`;
+  if (currentWarehouse === 'longqiao') {
+      headerHTML += `<th>总毛利</th><th>费用发放</th>`;
+  }
+  headerHTML += `</tr>`;
+  thead.innerHTML = headerHTML;
+
+  let tbody = summaryTableEl.querySelector('tbody');
+  if (!tbody) {
+      tbody = document.createElement('tbody');
+      summaryTableEl.appendChild(tbody);
+  }
+
+  if (!data || data.length === 0) {
+    totalQuantityEl.textContent = '0';
+    totalAmountEl.textContent = '¥0.00';
+    totalProductsEl.textContent = '0';
+    totalBrandsEl.textContent = '0';
+    
+    // 隆桥仓库显示利润
+    if (currentWarehouse === 'longqiao') {
+      totalProfitEl.textContent = '¥0.00';
+    }
+    // 根据仓库类型决定列数
+    const colCount = currentWarehouse === 'longqiao' ? 5 : 3;    
+    tbody.innerHTML = `
+      <tr>
+          <td colspan="${colCount}" style="text-align: center; padding: 30px; color: #6c757d;">
+          <i class="fas fa-chart-bar" style="font-size: 3rem; margin-bottom: 1rem; display: block;"></i>
+          无汇总数据
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  // 初始化统计变量
+  let totalQuantity = 0; // 总销量
+  let totalAmount = 0; // 总金额
+  let totalProfit = 0; // 总利润
+  let freeIssueAmount = 0;  // 费用发放
+  const uniqueBrands = new Set(); //品牌统计
+  const uniqueProducts = new Set(); //商品统计
+  const summaryMap = new Map(); // 汇总数据
+
+  // 单次遍历完成所有统计
+  data.forEach(record => {
+    // 统计商品和品牌
+    if (record.product_id) uniqueProducts.add(record.product_id);
+    if (record.brand) uniqueBrands.add(record.brand);
+
+    // 计算金额和数量
+    let amount, cost;
+    if (currentWarehouse === 'longqiao') {
+      amount = record.amount || 0;
+      cost = record.cost || 0;
+      
+      // 费用发放记录（销售额为0）
+      if (amount === 0) {
+        freeIssueAmount += cost;
+      } else { // 正常销售记录
+        const quantity = record.quantity || 0;
+        totalQuantity += quantity;
+        totalAmount += amount;
+        totalProfit += amount - cost;
+      }
+    } else { // 多多仓库
+      const pieces = record.pieces || 0; // 使用pieces字段
+      const quantity = record.quantity || 0;
+      const unitPrice = record.unit_price || 0;
+      amount = quantity * unitPrice;
+      totalQuantity += pieces; // 累加pieces而非quantity
+      totalAmount += amount;
+      cost = unitPrice;
+    }
+
+    // 按品牌汇总（只处理正常销售记录）
+    if (currentWarehouse !== 'longqiao' || amount !== 0) {
+      const brand = record.brand || '未知品牌';
+      
+      if (!summaryMap.has(brand)) {
+        summaryMap.set(brand, {
+          brand: brand,
+          total_quantity: 0,
+          total_amount: 0,
+          total_cost: 0,
+          profit: 0,
+          free_issue: 0  // 新增：记录该品牌的费用发放金额
+        });
+      }
+      // 更新汇总数据
+      const summary = summaryMap.get(brand); 
+      if (currentWarehouse === 'longqiao') {
+        summary.total_quantity += record.quantity || 0;
+        summary.total_amount += amount;
+        summary.total_cost += cost;
+        summary.profit += amount - cost;
+      } else {
+        summary.total_quantity += record.pieces || 0; // 使用pieces字段
+        summary.total_amount += amount;
+      }
+    }
+
+    // 按品牌汇总费用发放记录（amount=0）
+    if (currentWarehouse === 'longqiao' && amount === 0) {
+      const brand = record.brand || '未知品牌';
+      
+      if (!summaryMap.has(brand)) {
+        summaryMap.set(brand, {
+          brand: brand,
+          total_quantity: 0,
+          total_amount: 0,
+          total_cost: 0,
+          profit: 0,
+          free_issue: 0
+        });
+      }  
+      const summary = summaryMap.get(brand);
+      summary.free_issue += cost;  // 累加费用发放
+    }
+  });
+
+  // 检查是否为隆桥仓库且只有一个品牌
+  const isSingleBrandInLongqiao = currentWarehouse === 'longqiao' && 
+    (uniqueBrands.size === 1 || allBrands.length === 1);
+  const singleBrandName = uniqueBrands.size === 1 ? 
+    Array.from(uniqueBrands)[0] : 
+    (allBrands.length === 1 ? allBrands[0] : null);
+
+  // 如果是隆桥仓库且只有一个品牌，则按销售人员汇总
+  if (isSingleBrandInLongqiao && singleBrandName) {
+    // 重新构建按销售人员的汇总数据
+    const salesSummaryMap = new Map();
+    
+    // 初始化统计变量（用于卡片显示）
+    let salesTotalQuantity = 0;
+    let salesTotalAmount = 0;
+    let salesTotalProfit = 0;
+    let salesFreeIssueAmount = 0;
+    const salesUniqueProducts = new Set(); // 按销售人员统计的商品种类
+    
+    data.forEach(record => {
+      // 只处理与该品牌相关的记录
+      if (record.brand === singleBrandName) {
+        // 统计商品种类
+        if (record.product_id) salesUniqueProducts.add(record.product_id);
+        
+        let amount, cost;
+        if (currentWarehouse === 'longqiao') {
+          amount = record.amount || 0;
+          cost = record.cost || 0;
+          
+          const sales = record.sales || '未知销售人员';
+          
+          if (!salesSummaryMap.has(sales)) {
+            salesSummaryMap.set(sales, {
+              sales: sales,
+              total_quantity: 0,
+              total_amount: 0,
+              total_cost: 0,
+              profit: 0,
+              free_issue: 0
+            });
+          }
+          
+          const summary = salesSummaryMap.get(sales);
+          
+          if (amount === 0) {
+            // 费用发放记录
+            summary.free_issue += cost;
+            salesFreeIssueAmount += cost;
+          } else {
+            // 正常销售记录
+            const quantity = record.quantity || 0;
+            summary.total_quantity += quantity;
+            summary.total_amount += amount;
+            summary.profit += amount - cost;
+            
+            salesTotalQuantity += quantity;
+            salesTotalAmount += amount;
+            salesTotalProfit += amount - cost;
+          }
+        }
+      }
+    });
+    
+    // 更新统计卡片（按销售人员数据）
+    totalQuantityEl.textContent = formatNumber(salesTotalQuantity);
+    totalAmountEl.textContent = `¥${formatNumber(salesTotalAmount)}`;
+    totalProfitEl.textContent = `¥${formatNumber(salesTotalProfit)}`;
+    totalBrandsEl.textContent = `¥${formatNumber(salesFreeIssueAmount)}`;
+    totalBrandsEl.style.color = '#e53e3e';
+    totalProductsEl.textContent = formatNumber(salesUniqueProducts.size); // 更新商品种类数
+    
+    const statLabels = document.querySelectorAll('.stat-card .stat-label');
+    statLabels[3].textContent = '费用发放';
+    salesTotalProfit <= 0 ? totalProfitEl.style.color = '#e53e3e' : totalProfitEl.style.color = '#4361ee';
+    
+    // 更新表头为销售人员
+    thead.innerHTML = `<tr><th>销售人员</th><th>总件数</th><th>总金额</th><th>总毛利</th><th>费用发放</th></tr>`;
+    
+    // 按销售额从大到小排序
+    const sortedSummaries = Array.from(salesSummaryMap.values()).sort((a, b) => 
+      b.total_amount - a.total_amount
+    );
+    
+    // 渲染汇总表格
+    tbody.innerHTML = ''; // 清空 tbody 而不是整个表格 
+    
+    sortedSummaries.forEach(summary => {
+      const row = document.createElement('tr');
+      const profitStyle = summary.profit < 0 
+          ? 'style="color: #e53e3e; font-weight: bold;"' 
+          : '';
+      
+      row.innerHTML = `
+          <td>${summary.sales}</td>
+          <td>${formatNumber(summary.total_quantity)}</td>
+          <td>¥${formatNumber(summary.total_amount)}</td>
+          <td ${profitStyle}>¥${formatNumber(summary.profit)}</td> 
+          <td>¥${formatNumber(summary.free_issue)}</td> 
+      `;
+      tbody.appendChild(row);
+    });
+    
+    // 渲染饼图（按销售人员）
+    if (sortedSummaries.length > 0) {
+      renderSalesPieChart(sortedSummaries);
+    } else {
+      clearPieChart();
+    }
+  } else {
+    // 原有逻辑：按品牌汇总
+    
+    // 更新统计卡片
+    totalQuantityEl.textContent = formatNumber(totalQuantity);
+    totalAmountEl.textContent = `¥${formatNumber(totalAmount)}`;
+    
+    const statLabels = document.querySelectorAll('.stat-card .stat-label');
+    if (currentWarehouse === 'longqiao') {
+      totalBrandsEl.textContent = `¥${formatNumber(freeIssueAmount)}`;
+      totalBrandsEl.style.color = '#e53e3e';
+      statLabels[3].textContent = '费用发放';
+      totalProfit <= 0 ? totalProfitEl.style.color = '#e53e3e' : '#4361ee';
+      totalProfitEl.textContent = `¥${formatNumber(totalProfit)}`;
+    } else {
+      totalBrandsEl.textContent = formatNumber(uniqueBrands.size);
+      totalBrandsEl.style.color = '';
+      statLabels[3].textContent = '品牌数量';
+    }
+    
+    totalProductsEl.textContent = formatNumber(uniqueProducts.size);
+    
+    // 按销售额从大到小排序
+    const sortedSummaries = Array.from(summaryMap.values()).sort((a, b) => 
+      b.total_amount - a.total_amount
+    );
+    
+    // 渲染汇总表格
+    tbody.innerHTML = ''; // 清空 tbody 而不是整个表格 
+    
+    sortedSummaries.forEach(summary => {
+      const row = document.createElement('tr');
+      let rowHTML = `
+          <td>${summary.brand}</td>
+          <td>${formatNumber(summary.total_quantity)}</td>
+          <td>¥${formatNumber(summary.total_amount)}</td>
+      `;
+      
+      if (currentWarehouse === 'longqiao') {
+          const profitStyle = summary.profit < 0 
+              ? 'style="color: #e53e3e; font-weight: bold;"' 
+              : '';
+          
+          rowHTML += `
+              <td ${profitStyle}>¥${formatNumber(summary.profit)}</td> 
+              <td>¥${formatNumber(summary.free_issue)}</td> 
+          `;
+      }
+      
+      row.innerHTML = rowHTML;
+      tbody.appendChild(row);
+    });
+    
+    // 渲染饼图
+    if (data && data.length > 0) {
+      renderBrandPieChart(sortedSummaries);
+    } else {
+      clearPieChart(); // 新增：清空饼图
+    }
+  }
+
+  setTimeout(() => {
+    syncContainersDimensions();
+  }, 0);  
+}
+
+// 新增：按销售人员渲染饼图的函数
+function renderSalesPieChart(salesSummaries) {
+  const chartContainer = document.getElementById('chartContainer');
+  
+  // 清空容器
+  chartContainer.innerHTML = salesSummaries.length > 0 
+    ? '<canvas id="brandChart"></canvas>' 
+    : '<div class="no-chart-data">无销售人员数据可展示</div>';
+  
+  if (salesSummaries.length === 0) return;
+  
+  const ctx = document.getElementById('brandChart').getContext('2d');
+  if (!ctx) {
+    return;
+  }  
+  
+  // 饼图颜色生成器 
+  const generateColors = (count) => {
+    const baseColors = [
+      '#4BC0C0', // 青色
+      '#f54444ff', // 红色
+      '#36A2EB', // 蓝色
+      '#F15BB5',  // 粉红        
+      '#FFCE56', // 黄色
+      '#26cd3cff', // 绿色
+      '#9966FF', // 紫色
+      '#FF9F40', // 橙色
+      '#1982C4', // 深蓝
+      '#6A4C93' // 深紫
+    ];
+    
+    // 当销售人员数量超过基础颜色时，生成随机颜色
+    if (count > baseColors.length) {
+      for (let i = baseColors.length; i < count; i++) {
+        baseColors.push(`#${Math.floor(Math.random()*16777215).toString(16)}`);
+      }
+    }
+    
+    return baseColors.slice(0, count);
+  };
+  
+  // 创建饼图
+  const chart = new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: salesSummaries.map(item => item.sales),
+      datasets: [{
+        data: salesSummaries.map(item => item.total_amount),
+        backgroundColor: generateColors(salesSummaries.length),
+        borderWidth: 1,
+        borderColor: '#fff',
+        hoverOffset: 15,
+        radius: '92%' // 设置饼图大小为95%
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'right',
+          labels: {
+            font: { 
+              size: window.innerWidth <= 768 ? 10 : 14,
+              weight: 'bold'
+            },
+            padding: window.innerWidth <= 768 ? 9 : 20,
+            usePointStyle: true,
+            color: '#333'
+          }
+        },
+        title: {
+          display: true,
+          text: '销售人员销售金额占比',
+          font: {
+            size: window.innerWidth <= 768 ? 16 : 18,
+            weight: 'bold'
+          },
+          color: '#222',
+          padding: {
+            top: 20,
+            bottom: 10
+          }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(0,0,0,0.8)',
+          titleFont: {
+            size: 13,
+            weight: 'bold'
+          },
+          bodyFont: {
+            size: window.innerWidth <= 768 ? 10 : 12
+          },
+          callbacks: {
+            label: function(context) {
+              const label = context.label || '';
+              const value = context.raw || 0;
+              const total = context.chart.getDatasetMeta(0).total;
+              const percentage = Math.round((value / total) * 100);
+              return `${label}: ¥${formatNumber(value)} (${percentage}%)`;
+            }
+          }
+        },
+        datalabels: {
+          display: true,
+          formatter: (value, ctx) => {
+            const total = ctx.chart.getDatasetMeta(0).total;
+            const percentage = Math.round((value / total) * 100);
+            const label = ctx.chart.data.labels[ctx.dataIndex];
+            
+            if (percentage < 5) return null;
+            
+            return `${label}\n${percentage}%`;
+          },
+          color: '#222',
+          font: {
+            weight: 'bold',
+            size: window.innerWidth <= 768 ? 8 : 12
+          },
+          align: 'end',
+          anchor: 'center',
+          offset: 0,
+          clip: false,
+          textAlign: 'center',
+          padding: 2
+        }
+      },
+      animation: {
+        animateRotate: true,
+        animateScale: true
+      }
+    },
+    plugins: [ChartDataLabels]
+  });
+
+  // 存储图表实例以便后续调整
+  chartContainer.chartInstance = chart;
+}
+
+// 同步容器尺寸函数
+function syncContainersDimensions() {
+  const tableContainer = document.querySelector('.summary-table-container');
+  const chartContainer = document.querySelector('.chart-container');
+  
+  if (tableContainer && chartContainer) {
+    // 获取左侧表格的实际高度
+    const tableHeight = tableContainer.offsetHeight;
+    
+    // 设置右侧图表容器高度
+    chartContainer.style.height = `${tableHeight}px`;
+    
+    // 如果图表已渲染，重新调整大小
+    if (chartContainer.chartInstance) {
+      chartContainer.chartInstance.resize();
+    }
+  }
+}
+
+// ======= 新增: 饼图渲染函数 =======
+function renderBrandPieChart(brandSummaries) {
+  const chartContainer = document.getElementById('chartContainer');
+  
+  // 清空容器
+  chartContainer.innerHTML = brandSummaries.length > 0 
+    ? '<canvas id="brandChart"></canvas>' 
+    : '<div class="no-chart-data">无品牌数据可展示</div>';
+  
+  if (brandSummaries.length === 0) return;
+  
+  const ctx = document.getElementById('brandChart').getContext('2d');
+  if (!ctx) {
+    return;
+  }  
+  
+  // 饼图颜色生成器 
+  const generateColors = (count) => {
+    if (currentWarehouse === 'longqiao') {
+       baseColors = [
+        '#4BC0C0', // 青色
+        '#f54444ff', // 红色
+        '#36A2EB', // 蓝色
+        '#F15BB5',  // 粉红        
+        '#FFCE56', // 黄色
+        '#26cd3cff', // 绿色
+        '#9966FF', // 紫色
+        '#FF9F40', // 橙色
+        '#1982C4', // 深蓝
+        '#6A4C93' // 深紫
+      ];      
+    }else {
+       baseColors = [
+        '#26cd3cff', // 绿色
+        '#FFCE56', // 黄色
+        '#f54444ff', // 红色
+        '#36A2EB', // 蓝色
+        '#F15BB5',  // 粉红      
+        '#9966FF', // 紫色
+        '#FF9F40', // 橙色
+        '#6A4C93', // 深紫
+        '#4BC0C0', // 青色
+        '#1982C4' // 深蓝
+      ];
+    }
+    // 当品牌数量超过基础颜色时，生成随机颜色
+    if (count > baseColors.length) {
+      for (let i = baseColors.length; i < count; i++) {
+        baseColors.push(`#${Math.floor(Math.random()*16777215).toString(16)}`);
+      }
+    }
+    
+    return baseColors.slice(0, count);
+  };
+  
+  // 创建饼图
+  const chart = new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: brandSummaries.map(item => item.brand),
+      datasets: [{
+        data: brandSummaries.map(item => item.total_amount),
+        backgroundColor: generateColors(brandSummaries.length),
+        borderWidth: 1,
+        borderColor: '#fff',
+        hoverOffset: 15,
+        radius: '92%' // 设置饼图大小为95%
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'right',
+          labels: {
+            font: { 
+              size: window.innerWidth <= 768 ? 10 : 14,
+              weight: 'bold'
+            },
+            padding: window.innerWidth <= 768 ? 9 : 20,
+            usePointStyle: true,
+            color: '#333'
+          }
+        },
+        title: {
+          display: true,
+          text: '品牌销售金额占比',
+          font: {
+            size: window.innerWidth <= 768 ? 16 : 18,
+            weight: 'bold'
+          },
+          color: '#222',
+          padding: {
+            top: 20,
+            bottom: 10
+          }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(0,0,0,0.8)',
+          titleFont: {
+            size: 13,
+            weight: 'bold'
+          },
+          bodyFont: {
+            size: window.innerWidth <= 768 ? 10 : 12
+          },
+          callbacks: {
+            label: function(context) {
+              const label = context.label || '';
+              const value = context.raw || 0;
+              const total = context.chart.getDatasetMeta(0).total;
+              const percentage = Math.round((value / total) * 100);
+              return `${label}: ¥${formatNumber(value)} (${percentage}%)`;
+            }
+          }
+        },
+        datalabels: {
+          display: true,
+          formatter: (value, ctx) => {
+            const total = ctx.chart.getDatasetMeta(0).total;
+            const percentage = Math.round((value / total) * 100);
+            const label = ctx.chart.data.labels[ctx.dataIndex];
+            
+            if (percentage < 5) return null;
+            
+            return `${label}\n${percentage}%`;
+          },
+          color: '#222',
+          font: {
+            weight: 'bold',
+            size: window.innerWidth <= 768 ? 8 : 12
+          },
+          align: 'end',
+          anchor: 'center',
+          offset: 0,
+          clip: false,
+          textAlign: 'center',
+          padding: 2
+        }
+      },
+      animation: {
+        animateRotate: true,
+        animateScale: true
+      }
+    },
+    plugins: [ChartDataLabels]
+  });
+
+  // 存储图表实例以便后续调整
+  chartContainer.chartInstance = chart;
+}
+
+// ============== 8. 其他功能 ==============
+
+// ***清除饼图函数 ***
+function clearPieChart() {
+  const chartContainer = document.getElementById('chartContainer');
+  chartContainer.innerHTML = '<div class="no-chart-data">无品牌数据可展示</div>';
+  
+  // 清除图表实例引用
+  if (chartContainer.chartInstance) {
+    chartContainer.chartInstance.destroy();
+    chartContainer.chartInstance = null;
+  }
+}
+
+// ****【清除筛选】按扭函数****
+function clearFilters() {
+  // 使用reset方法重置选择状态（避免重新初始化）
+  warehouseMultiSelect.reset();
+  brandMultiSelect.reset();
+  productMultiSelect.reset();
+  if (customerMultiSelect) { // 重置客户下拉框
+    customerMultiSelect.reset();
+  }
+  
+  // 重置商品列表
+  filterProductsByBrand();
+
+  // 清除饼图数据
+  clearPieChart();  
+  
+  // 重新设置默认日期
+  setDefaultDates();
+  
+  loadFilterOptions().then(() => {
+      loadData();
+    })
+}
+
+// 切换详细记录显示
+function toggleDetailSection() {
+  detailSection.classList.toggle('visible');
+  
+  // 更新图标方向
+  const icon = document.querySelector('#toggleDetails i');
+  if (detailSection.classList.contains('visible')) {
+    icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+    // +++ 新增：显示时渲染表格 +++
+    showDetailTable();
+  } else {
+    icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+    // 隐藏时清除表格内容
+    if (detailTable) {
+      detailTable.innerHTML = '';
+    }
+  }
+}
+
+// **** 新增遮罩层函数 ****
+function showLoadingOverlay() {
+  // 创建或获取遮罩层
+  let overlay = document.getElementById('loading-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'loading-overlay';
+    overlay.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(255, 255, 255, 0.2);
+      z-index: 999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: blur(2px);
+    `;
+    document.body.appendChild(overlay);
+  } else {
+    overlay.style.display = 'flex';
+  }
+}
+
+// **** 移除遮罩层函数 ****
+function hideLoadingOverlay() {
+  const overlay = document.getElementById('loading-overlay');
+  if (overlay) {
+    overlay.style.display = 'none';
+  }
+}
+
+// **** 添加动态加载xlsx的函数 ****
+async function loadXlsxLibrary() { 
+  try {
+    // 动态创建script标签加载xlsx库
+    const script = document.createElement('script');
+    script.src = 'https://cdn.bootcdn.net/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    
+    // 返回一个Promise，在脚本加载完成后resolve
+    return new Promise((resolve, reject) => {
+      script.onload = () => resolve(window.XLSX);
+      script.onerror = () => reject(new Error('XLSX库加载失败'));
+      document.head.appendChild(script);
+    });
+  } catch (error) {
+    showRoundedAlert(`数据导出错误：${error}`, 'error');
+    return null;
+  }
+}
+
+// **** 导出为Excel功能 ****
+async function exportToExcel() {
+  // 检测是否为微信浏览器
+  const isWechat = /MicroMessenger/i.test(navigator.userAgent);  
+  if (isWechat) {
+    showRoundedAlert(`微信浏览器不支持此功能，请在浏览器中打开网页导出数据。`, 'warning');
+    return;
+  }
+
+  // 确保xlsx库已加载
+  if (typeof XLSX === 'undefined') {
+    try {
+      loadingEl.style.display = 'block';
+      showLoadingOverlay();
+      await loadXlsxLibrary();
+      if (!window.XLSX) {
+        throw new Error('XLSX库加载失败');
+      }
+    } catch (error) {
+      showRoundedAlert('导出功能暂时不可用。');
+      return;
+    }
+  }  
+  try {
+    // 获取当前筛选后的数据
+    const data = getFilteredData();
+    
+    if (!data || data.length === 0) {
+      showRoundedAlert('没有数据可导出', 'warning');
+      return;
+    }
+    
+    // 创建工作簿
+    const wb = XLSX.utils.book_new();
+    
+    // 准备导出的数据
+    const exportData = data.map(record => {
+      let amount, warehouseField, cost;
+      
+      if (currentWarehouse === 'longqiao') {
+        amount = record.amount || 0;
+        warehouseField = record.sales || '--';
+        cost = record.cost || 0;
+      } else {
+        amount = (record.quantity || 0) * (record.unit_price || 0);
+        warehouseField = record.warehouse || '--';
+        cost = record.unit_price || 0;
+      }
+      
+      // 基础行数据
+      const row = {
+        '日期': record.sale_date || '--',
+      };
+      
+      // 根据仓库类型添加不同的列
+      if (currentWarehouse === 'longqiao') {
+        row['客户名称'] = record.customer || '--';
+      } else {
+        row['商品ID'] = record.product_id || '--';
+      }
+      
+      row['商品名称'] = record.product_name || '--';
+      row['品牌'] = record.brand || '--';
+      
+      if (currentWarehouse === 'longqiao') {
+        row['销售人员'] = warehouseField;
+      } else {
+        row['仓库'] = warehouseField;
+      }
+      
+      row['销量'] = record.quantity || 0;
+      
+      if (currentWarehouse === 'longqiao') {
+        row['成本'] = cost;
+      } else {
+        row['单价'] = cost;
+      }
+      
+      row['金额'] = amount;
+      
+      // 隆桥仓库添加利润列
+      if (currentWarehouse === 'longqiao') {
+        const profit = (record.amount || 0) - (record.cost || 0);
+        row['毛利'] = profit;
+      }
+      
+      return row;
+    });
+    
+    // 创建工作表
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    
+    // 添加工作表到工作簿
+    XLSX.utils.book_append_sheet(wb, ws, "销售记录");
+    
+    // 生成文件名
+    const warehouseName = currentWarehouse === 'longqiao' ? '隆桥仓库' : '多多买菜';
+    const fileName = `${warehouseName}_销售记录_${startDateStr}_${endDateStr}.xlsx`;
+    loadingEl.style.display = 'none';
+    hideLoadingOverlay();
+    // 导出文件
+    XLSX.writeFile(wb, fileName);
+    showRoundedAlert('数据导出成功', 'success');
+  } catch (error) {
+    showRoundedAlert(`导出失败: ${ error.message}`, 'error');
+  }
+}
+
+// 屏幕响应式处理函数
+function handleResponsiveLayout() {
+  const totalProductsCard = document.getElementById('totalProducts').closest('.stat-card');
+  if (currentWarehouse === 'longqiao' && window.innerWidth < 800) {
+    // 隆桥仓库模式且屏幕宽度小于800px时隐藏商品种类卡片
+    totalProductsCard.style.display = 'none';
+  } else if (currentWarehouse === 'longqiao') {
+    // 隆桥仓库模式但屏幕宽度大于等于768px时显示商品种类卡片
+    totalProductsCard.style.display = 'block';
+  }
+}
+
+// ============== 9. 页面初始化 ==============
+document.addEventListener('DOMContentLoaded', async () => {
+  if (!supabaseClient) {
+    showRoundedAlert('错误: Supabase客户端未正确初始化');
+    queryBtn.disabled = true;
+    queryBtn.textContent = '系统未初始化';
+    queryBtn.style.background = '#e53e3e';
+    queryBtn.style.cursor = 'not-allowed';
+    loadingEl.innerHTML = '<p style="color: #e53e3e; padding: 1rem;">系统初始化失败，请刷新页面</p>';
+    loadingEl.style.display = 'block';
+    return;
+  }
+  
+  // 初始化认证状态
+  const isAuthenticated = await initAuth();
+  // 添加切换仓库按钮事件监听
+  document.getElementById('switchWarehouseBtn').addEventListener('click', switchWarehouse);
+  // 在页面加载完成后添加窗口大小变化监听器
+  window.addEventListener('resize', handleResponsiveLayout);  
+  // 无论是否已登录，都要设置用户菜单事件监听器
+  setupUserMenuEventListeners();
+
+  // 如果用户已登录，初始化应用
+  if (isAuthenticated) {
+    initializeApp();
+    return; // 关键优化点：直接返回避免后续认证逻辑
+  }
+
+  // 认证标签切换
+  authTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const tabId = tab.getAttribute('data-tab');
+      
+      authTabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      
+      loginForm.classList.remove('active');
+      registerForm.classList.remove('active');
+      
+      if (tabId === 'login') {
+        loginForm.classList.add('active');
+        loginForm.style.display = 'block';
+        registerForm.style.display = 'none';
+      } else {
+        registerForm.classList.add('active');
+        registerForm.style.display = 'block';
+        loginForm.style.display = 'none';
+      }
+    });
+  });
+  
+  // 登录功能
+  loginBtn.addEventListener('click', async () => {
+    const email = loginEmail.value;
+    const password = loginPassword.value;
+    
+    if (!email || !password) {
+      showRoundedAlert('请输入邮箱和密码', 'warning');
+      return;
+    }
+    
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+      email,
+      password
+    });
+    showRoundedAlert('登录成功！', 'success');
+    if (error) {
+      showRoundedAlert(`登录失败: 请检查用户名或密码是否正确！`, 'error');
+      return;
+    }
+    
+    user = data.user;
+    // 显示用户状态 - 根据邮箱前缀映射到用户名
+    const emailPrefix = user.email.split('@')[0]; // 获取邮箱前缀
+    const usernameMap = {
+      '162004332': '系统管理员',
+      'rickyone': '数据管理员',
+      '13762405681': '王英',
+      'ksf2025': '康师傅',
+      'pepsi_cola': '百事可乐',
+      'coca_cola': '可口可乐',
+      '15096086678': '娟子'
+    };
+  
+    // 如果邮箱前缀在映射表中，则使用映射的用户名，否则使用邮箱前缀
+    const displayName = usernameMap[emailPrefix] || emailPrefix;
+    userName.textContent = displayName;
+    
+    userStatus.style.display = 'block';
+    authContainer.style.display = 'none';
+    appContainer.style.display = 'block';
+    showRoundedAlert(`欢迎 ${displayName}！`, 'success');
+    
+    // 登录成功后初始化应用
+    initializeApp();
+  });
+
+  // 添加回车键登录支持
+  if (loginPassword) {
+    loginPassword.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        loginBtn.click();
+      }
+    });
+  }
+
+  // ============== 注册功能 ==============  
+  registerBtn.addEventListener('click', async () => {
+    const email = registerEmail.value;
+    const password = registerPassword.value;
+    const phone = registerPhone.value;
+
+    if (!email || !password) {
+      showRoundedAlert('请输入邮箱和密码', 'warning');
+      return;
+    }
+
+    const signUpOptions = {
+      email,
+      password,
+      options: {
+        data: {}
+      }
+    };
+    
+    if (phone) {
+      signUpOptions.phone = phone;
+    }
+    
+    try {
+      const { data, error } = await supabaseClient.auth.signUp(signUpOptions);
+      
+      if (error) {
+        showRoundedAlert(`注册失败: 该功能被禁止，请与管理员联系！`, 'error');
+        return;
+      }
+      
+      showRoundedAlert('注册成功! 请检查您的邮箱进行验证', 'success');
+      
+      // 切换到登录表单
+      authTabs.forEach(t => t.classList.remove('active'));
+      document.querySelector('.auth-tab[data-tab="login"]').classList.add('active');
+      loginForm.classList.add('active');
+      loginForm.style.display = 'block';
+      registerForm.style.display = 'none';
+      
+      // 预填充登录表单
+      loginEmail.value = email;
+    } catch (error) {
+      showRoundedAlert(`注册异常: ${error.message}`, 'error');
+    }
+  });
+
+  // 忘记密码功能
+  forgotPasswordLink.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const email = loginEmail.value;
+    
+    if (!email) {
+      showRoundedAlert('请输入您的邮箱', 'warning'); // 替换alert
+      return;
+    }
+    
+    const { data, error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.href // 使用当前页面作为回调
+    });
+    
+    if (error) {
+      showRoundedAlert(`发送重置邮件失败: ${error.message}`, 'error'); // 替换alert
+      return;
+    }
+    
+    showRoundedAlert('密码重置邮件已发送，请检查您的邮箱', 'success'); // 替换alert
+  });
+}); 
+
+// 新增：专门用于设置用户菜单事件监听器的函数
+function setupUserMenuEventListeners() {
+  // 添加用户菜单切换功能
+  if (userInfo) {
+    userInfo.addEventListener('click', (e) => {
+      e.stopPropagation();
+      userMenu.style.display = userMenu.style.display === 'block' ? 'none' : 'block';
+    });
+  }
+
+  // 点击页面其他地方关闭用户菜单
+  document.addEventListener('click', (e) => {
+    if (userMenu && userMenu.style.display === 'block' && !userInfo.contains(e.target)) {
+      userMenu.style.display = 'none';
+    }
+  });
+
+  // 实现退出登录功能
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        const { error } = await supabaseClient.auth.signOut();
+        
+        if (error) {
+          showRoundedAlert(`退出登录失败: ${ error.message}`, 'error');
+          return;
+        }
+        showRoundedAlert('已成功退出登录', 'success');
+
+        // 简单有效的解决方案：重新加载页面
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);        
+      } catch (error) {
+        showRoundedAlert('退出登录时发生错误', 'error');
+      }
+    });
+  }
+}
+
+
+// ============== 应用初始化函数 ==============
+function initializeApp() {
+  // 初始化Flatpickr
+  flatpickrInstance = flatpickr(dateRangePicker, {
+    mode: "range",
+    dateFormat: "Y-m-d",
+    static: true,
+    onChange: function(selectedDates) {
+      if (selectedDates.length === 2) {
+        handleDateChange();
+      }
+    }
+  });
+  // 设置默认日期：当月1号到今天
+  if (flatpickrInstance) {
+    setDefaultDates();
+  }
+
+  // 添加日期变化监听（带防抖）
+  let debounceTimer;
+  const handleDateChange = () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      loadFilterOptions()
+        .then(() => {
+          loadData();// 加载筛选选项后自动加载数据
+          handleResponsiveLayout(); // 添加初始响应式处理
+        })
+        .catch(console.error);
+    }, 500); // 500ms防抖
+  };
+
+  loadFilterOptions().then(() => {
+      // 绑定事件
+      queryBtn.addEventListener('click', loadData);
+      clearBtn.addEventListener('click', clearFilters);
+      document.getElementById('toggleDetails').addEventListener('click', toggleDetailSection);
+      document.getElementById('exportDetails').addEventListener('click', exportToExcel);
+      
+      // 加载初始数据
+      loadData();
+    })
+    .catch(error => {
+      console.error('初始化失败:', error);
+      loadingEl.innerHTML = `
+        <div style="text-align: center; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+          <div style="color: #e53e3e; font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
+          <p style="font-size: 1.2rem; margin-bottom: 0.5rem;">初始化失败</p>
+          <p>${error.message}</p>
+        </div>
+      `;
+      loadingEl.style.display = 'block';
+    });
+
+  // 使用捕获阶段关闭下拉框
+  document.addEventListener('click', (e) => {
+    // 只有当点击的不是下拉框相关元素时才关闭
+    if (
+      !warehouseSelector.contains(e.target) &&
+      !warehouseOptions.contains(e.target) &&
+      !brandSelector.contains(e.target) &&
+      !brandOptions.contains(e.target) &&
+      !productSelector.contains(e.target) &&
+      !productOptions.contains(e.target) &&
+      !customerSelector.contains(e.target) && // 新增客户下拉框判断
+      !customerOptions.contains(e.target) // 新增客户下拉框判断
+    ) {
+      closeAllDropdowns();
+    }
+  },true); // 添加捕获阶段监听器
+
+  // 为所有下拉框添加标签移除事件监听
+  document.querySelectorAll('.select-box').forEach(selectBox => {
+    selectBox.addEventListener('click', (e) => {
+      // 使用closest确保能捕获动态生成的元素
+      const removeBtn = e.target.closest('.tag-remove');
+      if (!removeBtn) return;
+
+      e.stopPropagation(); 
+      e.preventDefault(); 
+      
+      const tag = removeBtn.closest('.tag');
+      const selectorId = selectBox.id;
+      const value = tag.dataset.value;
+
+      // 找到对应的复选框并触发取消选择
+      if (selectorId === 'warehouseSelector') {
+        const checkbox = warehouseOptions.querySelector(`input[value="${value}"]`);
+        if (checkbox) {
+          checkbox.checked = false;
+          const event = new Event('change', { bubbles: true });
+          checkbox.dispatchEvent(event);
+        }
+      } else if (selectorId === 'brandSelector') {
+        const checkbox = brandOptions.querySelector(`input[value="${value}"]`);
+        if (checkbox) {
+          checkbox.checked = false;
+          const event = new Event('change', { bubbles: true });
+          checkbox.dispatchEvent(event);
+        }
+      } else if (selectorId === 'productSelector') {
+        const checkbox = productOptions.querySelector(`input[value="${value}"]`);
+        if (checkbox) {
+          checkbox.checked = false;
+          const event = new Event('change', { bubbles: true });
+          checkbox.dispatchEvent(event);
+        }
+      } else if (selectorId === 'customerSelector') {
+        const checkbox = customerOptions.querySelector(`input[value="${value}"]`);
+        if (checkbox) {
+          checkbox.checked = false;
+          const event = new Event('change', { bubbles: true });
+          checkbox.dispatchEvent(event);
+        }
+      }
+    });
+  });
+
+  // 滚动时关闭下拉框
+  window.addEventListener('scroll', () => {
+    closeAllDropdowns();
+  });
+  
+  // 窗口大小变化时重新定位下拉框
+  window.addEventListener('resize', () => {
+    if (currentOpenDropdown) {
+      const selector = currentOpenDropdown.previousElementSibling;
+      if (selector) {
+        if (selector.id === 'warehouseSelector') warehouseMultiSelect.positionDropdown();
+        else if (selector.id === 'brandSelector') brandMultiSelect.positionDropdown();
+        else if (selector.id === 'productSelector') productMultiSelect.positionDropdown();
+        else if (selector.id === 'customerSelector') customerMultiSelect.positionDropdown();
+      }
+    }
+  });
+}
